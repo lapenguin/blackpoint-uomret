@@ -289,6 +289,7 @@ var END_FALLBACK = {
 };
 
 function endGame(key){
+  clearProgress();
   if(key === 'joined') state.flags.joined = true;   /* 결말 기록이 '두건을 안 썼다'고 말하지 않게 */
   var e = ENDINGS[key] || ENDINGS.death;
   document.body.classList.remove('is-final');
@@ -391,6 +392,7 @@ function afterIntro(){
 }
 
 function startGame(charId){
+  clearProgress();
   state = newState(charId);
   beatQueue = [];
   showScreen('game');
@@ -412,6 +414,31 @@ document.getElementById('scene-strip').addEventListener('click', function(){
 });
 
 document.getElementById('btn-start').addEventListener('click', renderCharSelect);
+document.getElementById('btn-continue').addEventListener('click', resumeGame);
+
+/* 이어하기 */
+function resumeGame(){
+  var saved = loadProgress();
+  if(!saved){ renderCharSelect(); return; }
+  state = saved.state;
+  beatQueue = [];
+  showScreen('game');
+  placeLead();
+  renderMap();
+}
+
+(function showContinue(){
+  var saved = loadProgress();
+  if(!saved) return;
+  var s = saved.state;
+  document.getElementById('continue-box').hidden = false;
+  document.getElementById('continue-info').textContent =
+    s.char.name + ' · 10월 ' + (START_DATE + s.day) + '일 ' + (s.phase ? '밤' : '낮') +
+    ' · 그믐까지 ' + (LAST_DAY - s.day) + '일 · 단서 ' + s.clueOrder.length + '건';
+  var start = document.getElementById('btn-start');
+  start.textContent = '처음부터 (저장된 진행은 지워집니다)';
+  start.classList.add('secondary');
+})();
 document.getElementById('btn-restart').addEventListener('click', renderCharSelect);
 document.querySelectorAll('.map-node').forEach(function(btn){
   btn.addEventListener('click', function(){ visitLocation(btn.dataset.loc); });

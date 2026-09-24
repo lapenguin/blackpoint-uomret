@@ -289,3 +289,9 @@ body.in-scene.peek #journal:not([hidden]){ display:block; }
   color:var(--bone-dim); font-style:italic; font-size:.92rem; line-height:1.7;
   animation: fadein .6s ease;
 }
+
+/* ── 이어하기 ─────────────────────────────────────────── */
+.continue-box{ margin:0 0 12px; }
+.continue-info{ font-size:.84rem; color:var(--bone-dim); margin:6px 0 0; text-align:center; }
+.btn-primary.secondary{ background:none; border-color:var(--line); color:var(--bone-dim); font-size:.92rem; }
+.btn-primary.secondary:hover{ border-color:var(--brass); color:var(--bone); background:none; }

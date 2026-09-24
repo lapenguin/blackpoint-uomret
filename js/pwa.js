@@ -23,6 +23,12 @@
     st.textContent = text;
   }
 
+  var devHost = /^(localhost|127\.0\.0\.1)$/.test(location.hostname);
+  if(devHost && !/[?&]sw\b/.test(location.search)){
+    if(st){ st.hidden = false; st.textContent = '개발 모드 — 오프라인 저장 꺼짐 (주소에 ?sw 를 붙이면 켜짐)'; }
+    return;
+  }
+
   if(!('serviceWorker' in navigator)){
     say('이 브라우저에서는 오프라인 저장을 쓸 수 없습니다.');
     return;

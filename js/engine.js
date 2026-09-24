@@ -10,6 +10,35 @@ var beatQueue = [];
 var BR = String.fromCharCode(10) + String.fromCharCode(10);
 var NL = String.fromCharCode(10);
 
+/* ---------------------------------------------------------
+   자동 저장 — 지도 화면에 돌아올 때마다 한 번. 휴대폰이 앱을 닫아도 이어서 할 수 있게.
+   --------------------------------------------------------- */
+var SAVE_KEY = 'bp_save_v1';
+
+function saveProgress(){
+  if(!state) return;
+  try{
+    var copy = {};
+    Object.keys(state).forEach(function(k){ if(k !== 'char') copy[k] = state[k]; });
+    copy.travelLine = null;
+    localStorage.setItem(SAVE_KEY, JSON.stringify({ v:1, savedAt:Date.now(), state:copy }));
+  }catch(err){ /* 저장소를 쓸 수 없으면 조용히 넘어간다 */ }
+}
+function clearProgress(){
+  try{ localStorage.removeItem(SAVE_KEY); }catch(err){}
+}
+function loadProgress(){
+  try{
+    var raw = localStorage.getItem(SAVE_KEY);
+    if(!raw) return null;
+    var data = JSON.parse(raw);
+    var s = data && data.state;
+    if(!s || !CHARACTERS[s.charId] || typeof s.day !== 'number') return null;   /* 모양이 다른 옛 저장은 버린다 */
+    s.char = CHARACTERS[s.charId];
+    return { savedAt:data.savedAt, state:s };
+  }catch(err){ return null; }
+}
+
 function newState(charId){
   var c = CHARACTERS[charId];
   return {
@@ -396,6 +425,7 @@ function canReach(id){
 }
 
 function renderMap(){
+  saveProgress();
   document.body.classList.remove('in-scene', 'peek');
   window.scrollTo(0, 0);
   document.getElementById('encounter-section').hidden = true;
