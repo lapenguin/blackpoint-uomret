@@ -3,6 +3,7 @@
 
     python tools/release.py
 
+- 대본(story/*.txt)을 검사하고 js/story.js 를 다시 만든다. 오류가 있으면 여기서 멈춘다
 - sw.js 의 VERSION 을 지금 시각으로 바꾼다 → 폰이 다음에 열 때 새 버전을 받아 간다
 - 오프라인 저장 목록을 저장소의 실제 파일로 다시 만든다 (새 그림·새 스크립트도 자동 포함)
 """
@@ -10,6 +11,16 @@ import io, os, re, json, glob, datetime, sys
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 os.chdir(ROOT)
+sys.path.insert(0, os.path.join(ROOT, 'tools'))
+
+try:
+    sys.stdout.reconfigure(encoding='utf-8')
+except Exception:
+    pass
+
+import story
+if not story.compile_story():
+    sys.exit(1)
 
 def listed(pattern):
     return ['./' + p.replace('\\', '/') for p in sorted(glob.glob(pattern))]

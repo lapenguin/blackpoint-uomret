@@ -1,4 +1,5 @@
-/* 심연의 일지 — 세계 — 장소, 단서, 추론, 인물, 결말, 지도 힌트 */
+/* 심연의 일지 — 세계 — 장소, 단서, 추론, 인물, 결말, 이동 서사
+   장면(과 지도 힌트)은 story/*.txt 에 있다. */
 "use strict";
 
 /* =========================================================
@@ -224,69 +225,6 @@ var ENDINGS = {
     text:'더 이상 눈앞의 것과 기억 속의 것을 구별할 수 없습니다. 몸은 살아 있지만, 그 사람은 이제 그곳에 없습니다.' },
   death: { rank:0, title:'돌아오지 못한 자',
     text:'장부의 비어 있던 다음 줄에, 마침내 이름 하나가 적혔습니다. 잉크가 아직 마르지 않았습니다.' }
-};
-
-/* ---------------------------------------------------------
-   지도에 적는 것 — 그곳에 가면 무엇이 걸려 있는가
-   tag: core(의식에 필요한 것) · person(결말을 바꾸는 사람) · lore(기록) · danger(위험)
-   until: 그 날짜가 지나면 사라지는 장면
-   --------------------------------------------------------- */
-var LEAD_HINTS = {
-  h_jabez:    { tag:'lore',   text:'늙은 뱃사람에게 마을 사정을 묻는다' },
-  h_deal:     { tag:'person', text:'자베즈 — 그믐밤 배에 자리 하나' },
-  h_night:    { tag:'danger', text:'밤의 부두, 물 밖으로 나오는 것' },
-
-  s_flyer:    { tag:'core',   text:'실종자 전단 — 시기의 실마리' },
-  s_rhyme:    { tag:'core',   text:'아이들의 노래 — 시기의 실마리 (낮에만)' },
-  s_warn:     { tag:'danger', text:'광장의 눈총' },
-  s_empty:    { tag:'lore',   text:'문마다 그어진 표식' },
-
-  w_gilman:   { tag:'lore',   text:'눈을 깜빡이지 않는 주인' },
-  w_hold:     { tag:'danger', text:'폐선 창고 안쪽 — 저들의 준비' },
-  w_invite:   { tag:'person', text:'길먼의 제안 — 맞이하는 쪽의 길' },
-
-  sc_first:   { tag:'lore',   text:'9월 22일에 멈춘 교실' },
-  sc_hannah:  { tag:'lore',   text:'사라진 선생의 방' },
-  sc_desk:    { tag:'person', text:'맨 뒷자리 — 메리의 흔적' },
-
-  i_martha:   { tag:'person', text:'당신을 기다린 듯한 주인' },
-  i_room:     { tag:'person', text:'카터의 방 — 그가 남긴 것' },
-  i_confront: { tag:'person', text:'마사와 마주 앉는다 — 편지를 쓴 사람' },
-  i_truth:    { tag:'person', text:'마사에게 기록의 진실을 전한다' },
-  i_last:     { tag:'person', text:'명단의 마지막 빈 줄' },
-  i_flight:   { tag:'person', text:'카운터가 비어 있다' },
-
-  m_ledger:   { tag:'core',   text:'백 년 치 장부' },
-  m_secret:   { tag:'person', text:'장부에서 당신만 알아볼 이름' },
-  m_letter:   { tag:'person', text:'그을린 종이 — 당신을 부른 편지' },
-  m_portrait: { tag:'lore',   text:'초상화의 뒷면 — 첫 관리자' },
-  m_cellar:   { tag:'danger', text:'저택 지하' },
-
-  we_first:   { tag:'person', text:'물이 없는데 바닥이 젖어 있다' },
-  we_flower:  { tag:'person', text:'우물 바닥 — 메리가 간 자리' },
-  we_night:   { tag:'lore',   text:'밤의 우물가' },
-
-  l_silas:    { tag:'lore',   text:'문 앞을 지키는 등대지기' },
-  l_lens:     { tag:'lore',   text:'등명기 — 불빛의 방향' },
-  l_confess:  { tag:'core',   text:'사일러스의 고백 — 시기의 실마리', until:8 },
-  l_dead:     { tag:'core',   text:'사일러스의 쪽지' },
-
-  v_ritual:   { tag:'core',   text:'두건 쓴 이들의 의식 — 구절' },
-  v_deep:     { tag:'core',   text:'물 빠진 굴 — 제단으로 가는 길' },
-  v_gilman:   { tag:'lore',   text:'동굴의 리허설' },
-
-  c_journal:  { tag:'person', text:'불 켜진 예배당 — 카터의 흔적' },
-  c_pulpit:   { tag:'core',   text:'설교단 서랍 — 구절' },
-  c_ossuary:  { tag:'lore',   text:'연도가 적힌 관들' },
-  c_carter:   { tag:'person', text:'카터가 여기 있다' },
-
-  f_first:    { tag:'core',   text:'안개 속 울음소리 — 행렬과 표식' },
-  f_marks:    { tag:'core',   text:'나무의 표식 — 제단으로 가는 길' },
-  f_cabin:    { tag:'lore',   text:'사냥꾼의 오두막' },
-  f_hunt:     { tag:'danger', text:'숲길의 사람들' },
-
-  a_scout:    { tag:'core',   text:'바닥의 결' },
-  a_chamber:  { tag:'core',   text:'제단 아래 석실 — 자격' }
 };
 
 /* ---------------------------------------------------------

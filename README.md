@@ -18,10 +18,12 @@
 |---|---|
 | `index.html` | 화면 틀 |
 | `css/style.css` | 색·글꼴·배치 |
-| `js/data.js` | 장소, 단서, 추론, 인물, 결말 문장, 지도 힌트 |
+| `story/*.txt` | **장면 대본** — 장소마다 한 파일. 쓰는 법은 `story/README.md` |
+| `js/data.js` | 장소, 단서, 추론, 인물, 결말 문장, 이동 서사 |
+| `js/story.js` | 대본에서 자동으로 만들어지는 파일 (손으로 고치지 않음) |
 | `js/engine.js` | 상태, 화면 그리기, 주사위, 추격 |
 | `js/turn.js` | 턴 진행, 추론 발동, 젖은 발자국, 재방문 |
-| `js/scenes.js` | 장소 12곳의 모든 장면 |
+| `js/scenes.js` | 대본을 읽어 화면에 띄우는 해석기 |
 | `js/finale.js` | 그믐밤, 결말, 게임 시작 |
 | `js/pwa.js` | 휴대폰 설치 안내와 오프라인 저장 등록 |
 | `sw.js` | 오프라인 저장 (목록은 `tools/release.py` 가 만든다) |
@@ -32,9 +34,12 @@
 
 ## 고치고 올리는 법
 
+이야기를 고칠 때는 `story/*.txt` 만 고치면 됩니다. 코드는 건드리지 않습니다.
+
 ```
+python tools/story.py         # 대본만 검사하고 싶을 때 (release 가 어차피 돌린다)
 python tools/convert_art.py   # 새 그림을 넣었을 때만
-python tools/release.py       # 버전을 올리고 오프라인 저장 목록을 갱신
+python tools/release.py       # 대본 검사 → 버전 올림 → 오프라인 저장 목록 갱신
 git add -A
 git commit -m "무엇을 고쳤는지"
 git push
