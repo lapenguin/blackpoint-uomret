@@ -375,6 +375,7 @@ function renderMap(){
     }
   });
   renderLeads();
+  renderNextStep();
 }
 
 /* ---------------------------------------------------------
@@ -415,6 +416,82 @@ function showRoute(loc){
     var n = document.querySelector('.map-node[data-loc="' + step + '"]');
     if(n) n.classList.add('route-next');
   }
+}
+
+/* 가장 가까운 곳 */
+function nearestOf(locs){
+  var r = routesFrom(state.location), best = null;
+  locs.forEach(function(l){
+    var d = r.dist[l];
+    if(d === undefined) return;
+    if(!best || d < best.d) best = { loc:l, d:d };
+  });
+  return best;
+}
+
+/* 다음 할 일 — 위험하면 쉬라고, 밤이 걱정되면 숨으라고, 아니면 가장 중요한 곳을 */
+function renderNextStep(){
+  var el = document.getElementById('next-step');
+  if(!el) return;
+  var sanLow = state.sanity <= state.sanityMax * 0.5;
+  var hpLow  = state.health <= state.healthMax * 0.5;
+  var pick = null, cls = '', head = '', text = '';
+
+  if(sanLow || hpLow){
+    pick = nearestOf(['inn', 'harbor']);
+    if(pick){
+      cls = 'warn';
+      head = (sanLow ? '정신력' : '체력') + '이 절반 아래입니다';
+      text = LOC[pick.loc].name + '에서 쉬세요';
+    }
+  }
+  if(!pick && state.watch >= 3 && !isNight()){
+    pick = nearestOf(['inn', 'harbor']);
+    if(pick){
+      cls = 'safe';
+      head = '해가 지면 쫓길 수 있습니다';
+      text = '주시가 높습니다. ' + LOC[pick.loc].name + '에서 밤을 보내면 안전합니다';
+    }
+  }
+  if(!pick){
+    var r = routesFrom(state.location);
+    var items = Object.keys(state.leadAt).map(function(loc){
+      return { loc:loc, l:state.leadAt[loc], d:r.dist[loc] };
+    }).filter(function(x){ return x.d !== undefined && x.l.tag !== 'danger'; });
+    items.sort(function(a, b){ return (TAG_ORDER[a.l.tag] - TAG_ORDER[b.l.tag]) || (a.d - b.d); });
+    if(items.length){
+      pick = { loc:items[0].loc, d:items[0].d };
+      head = '다음';
+      text = LOC[pick.loc].name + ' — ' + items[0].l.text;
+    }
+  }
+
+  if(!pick){
+    el.hidden = false;
+    el.className = 'next-step';
+    el.innerHTML = '';
+    var h0 = document.createElement('span'); h0.className = 'ns-head'; h0.textContent = '다음';
+    el.appendChild(h0);
+    el.appendChild(document.createTextNode('일지를 펼쳐 무엇이 모자란지 확인해 보세요.'));
+    el.onclick = function(){ document.getElementById('journal-toggle').click(); };
+    return;
+  }
+
+  el.hidden = false;
+  el.className = 'next-step' + (cls ? ' ' + cls : '');
+  el.innerHTML = '';
+  var h = document.createElement('span'); h.className = 'ns-head'; h.textContent = head;
+  el.appendChild(h);
+  el.appendChild(document.createTextNode(text + (pick.d === 0 ? ' · 지금 여기 — 이곳을 한 번 더 누르세요' : ' · ' + pick.d + '수')));
+  el.onclick = function(){
+    if(pick.d === 0){
+      clearRoute();
+      var here = document.querySelector('.map-node.current');
+      if(here) here.classList.add('route-next');
+    } else {
+      showRoute(pick.loc);
+    }
+  };
 }
 
 function renderLeads(){
@@ -890,13 +967,13 @@ function caught(c){
   if(c.caught === 0) dmg = Math.max(1, dmg - 1);   /* 첫 번째는 경고에 가깝다 */
   if(hasItem('cross')) dmg = Math.max(1, dmg - 1);
   var sanLoss = (c.foe.dread && Math.random() < 0.6) ? 1 : 0;
-  applyEffect({ health:-dmg, sanity:-sanLoss, watch:1 });
+  applyEffect({ health:-dmg, sanity:-sanLoss });
   shakePanel();
   c.caught += 1;
 
   var msg = pickOne(CAUGHT_LINES) + BR + '체력 −' + dmg +
     (hasItem('cross') ? ' (십자가가 한 점 덜어냈다)' : '') +
-    (sanLoss ? ' · 정신력 −' + sanLoss : '') + ' · 주시 +1';
+    (sanLoss ? ' · 정신력 −' + sanLoss : '');
 
   if(state.health <= 0) return showContinueWithText(msg, function(){ endGame('death'); });
   if(state.sanity <= 0) return showContinueWithText(msg, function(){ handleZeroSanity(c.nextFn); });
@@ -909,6 +986,10 @@ function caught(c){
 }
 
 function finishChase(c, text){
+  if(state.watch > 0){
+    applyEffect({ watch:-1 });
+    text += BR + '완전히 따돌렸습니다. 당신이 어디로 갔는지 아는 사람이 줄었습니다. (주시 −1)';
+  }
   if(c.onEscape){
     var extra = c.onEscape();
     if(extra) text += BR + extra;

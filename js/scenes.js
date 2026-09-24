@@ -413,12 +413,28 @@ var SCENES = {
         function(){ state.flags.marthaFled = true; logLine('마사가 마을을 떠났다.'); afterScene(); });
     } },
     { id:'i_sleep', repeat:true, quiet:true, when:function(){
-        if(!isNight()) return false;
         if(state.flags.suspectMartha && !state.seen['i_confront']) return false;
         if(hasClue('blood') && state.seen['i_confront'] && !state.seen['i_truth'] && !state.flags.marthaFled) return false;
         if(state.day >= 10 && state.seen['i_confront'] && !state.seen['i_last'] && !state.flags.marthaFled) return false;
         return true;
       }, run:function(){
+      if(!isNight()){
+        return showChoiceEncounter({
+          title:'여관에서 한숨 돌리다', place:LOC.inn.place,
+          text:'한낮의 여관은 조용합니다. 난로 옆 의자가 비어 있습니다.',
+          choices:[
+            { label:'방에 올라가 쉰다', note:'체력 +2 · 정신력 +3 · 주시 -1', onPick:function(){
+                applyEffect({ health:2, sanity:3, watch:-1 });
+                return { text:'커튼을 치고 잠깐 눈을 붙입니다. 깨고 나니 창밖의 안개가 조금 옅어져 있습니다.', next:afterScene };
+            } },
+            { label:'난로 옆에서 마사와 차를 마신다', note:'정신력 +2 · 주시 -2', when:function(){ return !state.flags.marthaFled; }, onPick:function(){
+                applyEffect({ sanity:2, watch:-2 });
+                return { text:'마사는 아무것도 묻지 않고 찻잔을 채워 줍니다. 창밖을 지나던 사람들이 여관 안의 당신을 보고, 흥미를 잃은 얼굴로 지나갑니다.' + BR +
+                              '여관 손님이 여관에 있는 것은 이상한 일이 아니니까요.', next:afterScene };
+            } }
+          ]
+        });
+      }
       showChoiceEncounter({
         title:'여관에서 묵다', place:LOC.inn.place,
         text:'복도의 등이 하나씩 꺼집니다. 오늘 밤은 지붕 아래에서 보낼 수 있습니다.',

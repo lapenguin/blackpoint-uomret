@@ -148,8 +148,8 @@ function advanceTime(){
   }
   state.flags.restedTonight = false;
 
-  /* 주시는 조금씩 가라앉는다 */
-  if(!isNight() && state.watch > 0 && Math.random() < 0.4) state.watch -= 1;
+  /* 주시는 하루에 하나씩 확실히 가라앉는다 */
+  if(state.phase === 0 && state.watch > 0) state.watch -= 1;
 
   checkDeductions();
   checkFootprints();
@@ -171,9 +171,13 @@ function advanceTime(){
 
 function nightPressure(){
   if(!isNight()) return null;
-  var chance = 0.10 + state.watch * 0.08;
-  if(state.location === 'inn' || state.location === 'harbor') chance -= 0.12;
+  /* 여관과 부두는 밤에도 안전하다 */
+  if(state.location === 'inn' || state.location === 'harbor') return null;
+  /* 이틀 연속으로는 쫓기지 않는다 */
+  if(state.lastChaseDay && state.day - state.lastChaseDay < 2) return null;
+  var chance = 0.05 + state.watch * 0.06;
   if(Math.random() > chance) return null;
+  state.lastChaseDay = state.day;
   if(state.watch >= 4) return PURSUERS.towns;
   if(state.location === 'wharf' || state.location === 'cave' || state.location === 'harbor') return PURSUERS.gilman;
   return PURSUERS.cult;

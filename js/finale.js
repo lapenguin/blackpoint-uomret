@@ -374,6 +374,21 @@ function renderCharSelect(){
   });
 }
 
+/* 처음 한 판에만 보여 주는 안내 (일지 맨 아래 '도움말'에서 다시 볼 수 있다) */
+function afterIntro(){
+  var seen = false;
+  try{ seen = localStorage.getItem('bp_guide_v1') === '1'; }catch(e){}
+  if(seen) return renderMap();
+  try{ localStorage.setItem('bp_guide_v1', '1'); }catch(e){}
+  showNarrativeBeat('처음이라면',
+    '목표 — 그믐밤까지 구절·시기·자격 세 가지를 알아내고, 누가 값을 치를지 정합니다.' + BR +
+    '다음 할 일 — 지도 위 한 줄이 지금 가 볼 만한 곳을 알려줍니다. 누르면 가는 길이 깜빡입니다. 한 번 움직일 때마다 반나절이 지납니다.' + BR +
+    '정신력 — 절반 아래로 떨어지면 여관이나 부두에서 쉬세요. 바닥나면 이야기가 끝납니다.' + BR +
+    '주시 — 마을이 당신을 지켜보는 정도입니다. 높으면 밤에 쫓깁니다. 여관과 부두는 밤에도 안전하고, 주시는 하루에 하나씩 가라앉습니다.' + BR +
+    '이 안내는 일지 맨 아래 도움말에서 다시 볼 수 있습니다.',
+    renderMap, { label:'알겠습니다' });
+}
+
 function startGame(charId){
   state = newState(charId);
   beatQueue = [];
@@ -385,7 +400,7 @@ function startGame(charId){
     '종착역에서 내려 다시 두 시간을 걸었습니다. 도로 표지판에 블랙포인트라는 이름이 나온 것은 단 한 번이었고, 그마저 페인트가 벗겨져 반쯤 읽히지 않았습니다.' + BR +
     '안개가 육지 쪽으로 밀려오고 있습니다. 바다에서 오는 안개는 보통 짠내가 나는데, 이 안개에서는 다른 냄새가 납니다. 오래 닫아둔 지하실 같은, 젖은 돌 냄새입니다.' + BR +
     '열이틀 남았습니다.',
-    renderMap,
+    afterIntro,
     { place:'블랙포인트 · 10월 2일' }
   );
 }

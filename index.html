@@ -83,10 +83,18 @@
       <ul id="req-list" class="req-list"></ul>
       <h3 class="spaced">알아낸 것</h3>
       <div id="clue-list"></div>
+      <h3 class="spaced">도움말</h3>
+      <div class="help">
+        <p><b>목표</b> — 그믐밤까지 구절·시기·자격 세 가지를 알아내고, 누가 값을 치를지 정합니다.</p>
+        <p><b>다음 할 일</b> — 지도 위 한 줄이 지금 가 볼 만한 곳을 알려줍니다. 누르면 가는 길이 깜빡입니다. 한 번 움직일 때마다 반나절이 지납니다.</p>
+        <p><b>정신력</b> — 절반 아래로 떨어지면 여관이나 부두에서 쉬세요. 바닥나면 이야기가 끝납니다.</p>
+        <p><b>주시</b> — 마을이 당신을 지켜보는 정도입니다. 높으면 밤에 쫓깁니다. 여관과 부두는 밤에도 안전하고, 주시는 하루에 하나씩 가라앉습니다.</p>
+      </div>
     </div>
 
     <div id="map-section">
       <p class="lede-small" id="map-prompt">어디로 향하시겠습니까?</p>
+      <button id="next-step" class="next-step" hidden></button>
       <div class="map-wrap">
         <svg class="map-lines" viewBox="0 0 100 100" preserveAspectRatio="none">
           <line x1="50" y1="94" x2="24" y2="82"></line>
