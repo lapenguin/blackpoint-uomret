@@ -405,6 +405,11 @@ function startGame(charId){
   );
 }
 
+document.getElementById('scene-strip').addEventListener('click', function(){
+  document.body.classList.toggle('peek');
+  renderStrip();
+});
+
 document.getElementById('btn-start').addEventListener('click', renderCharSelect);
 document.getElementById('btn-restart').addEventListener('click', renderCharSelect);
 document.querySelectorAll('.map-node').forEach(function(btn){

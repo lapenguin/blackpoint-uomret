@@ -1006,6 +1006,7 @@ function visitLocation(id){
       renderMap);
   }
 
+  state.travelLine = composeTravel(state.location, id);
   state.location = id;
   state.steps += 1;
   routeLocation(id);

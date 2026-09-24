@@ -259,3 +259,33 @@ button.item-chip.usable:hover{ background:var(--brass-dim); }
 .offline-status.ready{ color:var(--teal); }
 .install-hint{ font-size:.86rem; color:var(--bone-dim); border:1px dashed var(--brass-dim); padding:9px 12px; margin:0 0 16px; line-height:1.6; }
 .install-hint b{ color:var(--brass); }
+
+/* ── 장면 모드: 장면이 뜨면 상태창을 한 줄로 접는다 ─────────────── */
+.scene-strip{ display:none; }
+body.in-scene .scene-strip{
+  display:flex; align-items:center; gap:4px 10px; flex-wrap:wrap; width:100%;
+  padding:7px 11px; margin:0 0 10px; background:var(--panel); border:1px solid var(--line);
+  color:var(--bone-dim); font-family:var(--font-body); font-size:.8rem; line-height:1.4;
+  text-align:left; cursor:pointer; font-variant-numeric:tabular-nums;
+}
+.scene-strip:focus-visible{ outline:2px solid var(--brass); outline-offset:2px; }
+.scene-strip .ss-date{ color:var(--bone); }
+.scene-strip b{ color:var(--bone); font-weight:700; }
+.scene-strip .low b{ color:#c77a6a; }
+.scene-strip .ss-more{ margin-left:auto; color:var(--bone-faint); font-size:.74rem; }
+body.in-scene .topbar,
+body.in-scene #char-banner,
+body.in-scene .stats,
+body.in-scene #journal,
+body.in-scene #inventory-bar{ display:none; }
+body.in-scene.peek .topbar{ display:flex; }
+body.in-scene.peek .stats{ display:block; }
+body.in-scene.peek #inventory-bar{ display:flex; }
+body.in-scene.peek #journal:not([hidden]){ display:block; }
+
+/* ── 이동 서사: 도착하기 전 걸어가는 한 줄 ─────────────────── */
+.event-travel{
+  margin:0 0 12px; padding:0 0 10px; border-bottom:1px solid rgba(58,49,31,.75);
+  color:var(--bone-dim); font-style:italic; font-size:.92rem; line-height:1.7;
+  animation: fadein .6s ease;
+}

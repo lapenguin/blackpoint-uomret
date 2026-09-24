@@ -189,6 +189,56 @@ function showScreen(name){
   ['title','select','game','end'].forEach(function(n){
     document.getElementById('screen-'+n).hidden = (n !== name);
   });
+  document.body.classList.remove('in-scene', 'peek');
+}
+
+/* 장면 모드의 한 줄 상태 — 누르면 전체 상태창이 펼쳐진다 */
+function renderStrip(){
+  var el = document.getElementById('scene-strip');
+  if(!el || !state) return;
+  el.innerHTML = '';
+  function part(cls, label, value){
+    var s = document.createElement('span');
+    s.className = cls;
+    if(label) s.appendChild(document.createTextNode(label + ' '));
+    var b = document.createElement('b'); b.textContent = value;
+    s.appendChild(b);
+    el.appendChild(s);
+  }
+  var d = document.createElement('span');
+  d.className = 'ss-date';
+  d.textContent = dateLabel();
+  el.appendChild(d);
+  part(state.sanity <= state.sanityMax * 0.5 ? 'low' : '', '정신력', state.sanity + '/' + state.sanityMax);
+  part(state.health <= state.healthMax * 0.5 ? 'low' : '', '체력', state.health + '/' + state.healthMax);
+  part(state.watch >= 3 ? 'low' : '', '주시', String(state.watch));
+  var m = document.createElement('span');
+  m.className = 'ss-more';
+  m.textContent = document.body.classList.contains('peek') ? '▴' : '▾';
+  el.appendChild(m);
+  el.setAttribute('aria-expanded', document.body.classList.contains('peek') ? 'true' : 'false');
+}
+
+/* 이동 서사 — 같은 문장이 연달아 나오지 않게 */
+function pickFresh(key, arr){
+  if(!arr || !arr.length) return '';
+  state.lastTravel = state.lastTravel || {};
+  var opts = arr.filter(function(s){ return s !== state.lastTravel[key]; });
+  var s = pickOne(opts.length ? opts : arr);
+  state.lastTravel[key] = s;
+  return s;
+}
+function composeTravel(from, to){
+  var when = isNight() ? 'night' : 'day';
+  var base = (from === to)
+    ? pickFresh('stay-' + when, TRAVEL.stay[when])
+    : pickFresh(to + '-' + when, (TRAVEL.arrive[to] || {})[when]);
+  var extra = '';
+  if(state.sanity <= state.sanityMax * 0.5 && Math.random() < 0.6) extra = pickFresh('san', TRAVEL.sanLow);
+  else if(state.watch >= 3 && Math.random() < 0.6)                 extra = pickFresh('watch', TRAVEL.watched);
+  else if(state.day >= 9 && Math.random() < 0.5)                    extra = pickFresh('late', TRAVEL.late);
+  else if(Math.random() < 0.3)                                      extra = pickFresh('char', TRAVEL.char[state.charId]);
+  return base + (extra ? ' ' + extra : '');
 }
 
 function renderPips(containerId, current, max, cls){
@@ -224,6 +274,7 @@ function updateStatsUI(){
     dateLabel() + (daysLeft() > 0 ? ' — 그믐까지 ' + daysLeft() + '일' : ' — 오늘이 그믐');
   document.body.classList.toggle('is-night', isNight());
   renderJournal();
+  renderStrip();
 }
 
 function renderJournal(){
@@ -345,6 +396,8 @@ function canReach(id){
 }
 
 function renderMap(){
+  document.body.classList.remove('in-scene', 'peek');
+  window.scrollTo(0, 0);
   document.getElementById('encounter-section').hidden = true;
   document.getElementById('map-section').hidden = false;
   updateStatsUI();
@@ -649,6 +702,14 @@ function sceneArt(explicit){
 }
 
 function openEncounter(title, text, place, art){
+  document.body.classList.add('in-scene');
+  document.body.classList.remove('peek');
+  var tr = document.getElementById('event-travel');
+  if(tr){
+    if(state && state.travelLine){ tr.hidden = false; tr.textContent = state.travelLine; state.travelLine = null; }
+    else tr.hidden = true;
+  }
+  window.scrollTo(0, 0);
   setArt('event-art', 'event-art-img', sceneArt(art));
   document.getElementById('map-section').hidden = true;
   document.getElementById('encounter-section').hidden = false;
@@ -713,6 +774,9 @@ function showNarrativeBeat(title, text, nextFn, opts){
 }
 
 function showContinueWithText(text, nextFn, doc){
+  var tr = document.getElementById('event-travel');
+  if(tr) tr.hidden = true;
+  window.scrollTo(0, 0);
   updateStatsUI(); updateInventoryUI();
   document.getElementById('event-text').textContent = text;
   if(doc) showDoc(doc[0], doc[1]);
