@@ -16,25 +16,35 @@
       : '휴대폰에 설치하려면 브라우저 메뉴(⋮)에서 <b>홈 화면에 추가</b> 또는 <b>앱 설치</b>를 누르세요. 그다음부터는 인터넷 없이 열립니다.';
   }
 
-  if(!('serviceWorker' in navigator)){
-    if(st){ st.hidden = false; st.textContent = '이 브라우저에서는 오프라인 저장을 쓸 수 없습니다.'; }
-    return;
-  }
-  function ready(){
+  function say(text, cls){
     if(!st) return;
     st.hidden = false;
-    st.className = 'offline-status ready';
-    st.textContent = '✓ 이 기기에 저장됨 — 인터넷 없이도 플레이할 수 있습니다';
+    st.className = 'offline-status' + (cls ? ' ' + cls : '');
+    st.textContent = text;
   }
+
+  if(!('serviceWorker' in navigator)){
+    say('이 브라우저에서는 오프라인 저장을 쓸 수 없습니다.');
+    return;
+  }
+
+  /* "저장됨"은 저장본이 실제로 온전한지 확인이 끝난 뒤에만 말한다 */
   navigator.serviceWorker.addEventListener('message', function(e){
-    if(e.data && e.data.type === 'offline-ready') ready();
+    if(!e.data) return;
+    if(e.data.type === 'offline-ready')  say('✓ 이 기기에 저장됨 — 인터넷 없이도 플레이할 수 있습니다', 'ready');
+    if(e.data.type === 'offline-failed') say('저장을 마치지 못했습니다. 인터넷이 될 때 한 번 더 열어 주세요.');
   });
-  if(navigator.serviceWorker.controller) ready();
-  else if(st){ st.hidden = false; st.textContent = '이 기기에 저장하는 중… (처음 한 번, 5MB 정도)'; }
+
+  say(navigator.serviceWorker.controller
+      ? '저장본을 확인하는 중…'
+      : '이 기기에 저장하는 중… (처음 한 번, 5MB 정도)');
 
   window.addEventListener('load', function(){
     navigator.serviceWorker.register('./sw.js').catch(function(){
-      if(st){ st.hidden = false; st.textContent = '오프라인 저장을 시작하지 못했습니다. 인터넷 연결을 확인하세요.'; }
+      say('오프라인 저장을 시작하지 못했습니다. 인터넷 연결을 확인하세요.');
+    });
+    navigator.serviceWorker.ready.then(function(reg){
+      if(reg.active) reg.active.postMessage({ type:'ensure' });
     });
   });
 })();

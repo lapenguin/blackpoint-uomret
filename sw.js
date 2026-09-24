@@ -1,7 +1,9 @@
 /* 심연의 일지 — 오프라인 저장
    처음 열 때 게임·그림·글꼴을 전부 기기에 저장해 두고, 그 뒤로는 저장본으로 실행한다.
-   게임을 고치면 VERSION 만 바꾸면 된다. 다음 실행 때 새 버전으로 바뀐다. */
-var VERSION  = '2026-09-24.121601';
+   열 때마다 저장본이 온전한지 확인하고, 빠진 것이 있으면 다시 채운다
+   (아이폰은 오래 안 쓴 앱의 저장본을 지우기도 한다).
+   VERSION 과 CORE 는 tools/release.py 가 채운다. 손으로 고치지 말 것. */
+var VERSION  = '2026-09-24.121958';
 var CACHE    = 'blackpoint-' + VERSION;
 var FONT_CSS = 'https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600&family=Nanum+Myeongjo:wght@400;700&display=swap';
 var CORE     = [
@@ -42,30 +44,49 @@ var CORE     = [
   "./art/pc-sailor.jpg"
 ];
 
+function coreRequest(u){
+  /* 브라우저 캐시(GitHub Pages 는 10분)를 거치지 않고 서버에서 새로 받는다.
+     안 그러면 새 스크립트와 옛 화면이 섞여 저장될 수 있다. */
+  return new Request(u, { cache:'reload' });
+}
+
+async function saveFonts(cache){
+  /* 스타일시트를 받아 그 안에 적힌 글꼴 파일까지 전부 저장한다.
+     실패해도 게임은 기본 글꼴로 돌아가므로 전체를 막지 않는다. */
+  try{
+    var res = await fetch(FONT_CSS, { mode:'cors' });
+    if(!res.ok) return;
+    await cache.put(FONT_CSS, res.clone());
+    var css  = await res.text();
+    var urls = Array.from(new Set(css.match(/https:\/\/fonts\.gstatic\.com\/[^)'"\s]+/g) || []));
+    var have = new Set((await cache.keys()).map(function(r){ return r.url; }));
+    await Promise.allSettled(urls.filter(function(u){ return !have.has(u); }).map(function(u){
+      return fetch(u, { mode:'cors' }).then(function(r){ if(r.ok) return cache.put(u, r); });
+    }));
+  }catch(err){}
+}
+
+/* 빠진 것만 채운다. 처음 설치 때는 전부가 빠져 있다. */
+async function fill(){
+  var cache = await caches.open(CACHE);
+  var have  = new Set((await cache.keys()).map(function(r){ return r.url; }));
+  var need  = CORE.filter(function(u){ return !have.has(new URL(u, self.registration.scope).href); });
+  if(need.length) await cache.addAll(need.map(coreRequest));
+  if(!have.has(FONT_CSS) || need.length) await saveFonts(cache);
+  return need.length;
+}
+
+async function tell(client, repaired){
+  var msg = { type:'offline-ready', version:VERSION, repaired:repaired };
+  if(client){ client.postMessage(msg); return; }
+  var clients = await self.clients.matchAll({ includeUncontrolled:true });
+  clients.forEach(function(c){ c.postMessage(msg); });
+}
+
 self.addEventListener('install', function(event){
   event.waitUntil((async function(){
-    var cache = await caches.open(CACHE);
-    /* 브라우저 캐시(GitHub Pages 는 10분)를 거치지 않고 서버에서 새로 받는다.
-       안 그러면 새 스크립트와 옛 화면이 섞여 저장될 수 있다. */
-    await cache.addAll(CORE.map(function(u){ return new Request(u, { cache:'reload' }); }));
-
-    /* 글꼴: 스타일시트를 받아 그 안에 적힌 글꼴 파일까지 전부 저장한다.
-       실패해도 게임은 기본 글꼴로 돌아가므로 설치를 막지 않는다. */
-    try{
-      var res = await fetch(FONT_CSS, { mode:'cors' });
-      if(res.ok){
-        await cache.put(FONT_CSS, res.clone());
-        var css  = await res.text();
-        var urls = Array.from(new Set(css.match(/https:\/\/fonts\.gstatic\.com\/[^)'"\s]+/g) || []));
-        await Promise.allSettled(urls.map(function(u){
-          return fetch(u, { mode:'cors' }).then(function(r){ if(r.ok) return cache.put(u, r); });
-        }));
-      }
-    }catch(err){}
-
+    await fill();
     await self.skipWaiting();
-    var clients = await self.clients.matchAll({ includeUncontrolled:true });
-    clients.forEach(function(c){ c.postMessage({ type:'offline-ready', version:VERSION }); });
   })());
 });
 
@@ -76,6 +97,20 @@ self.addEventListener('activate', function(event){
       return k.indexOf('blackpoint-') === 0 && k !== CACHE;
     }).map(function(k){ return caches.delete(k); }));
     await self.clients.claim();
+    await tell(null, 0);
+  })());
+});
+
+/* 페이지가 열릴 때마다 "저장본 온전한가?"를 묻는다 */
+self.addEventListener('message', function(event){
+  if(!event.data || event.data.type !== 'ensure') return;
+  event.waitUntil((async function(){
+    try{
+      var repaired = await fill();
+      await tell(event.source, repaired);
+    }catch(err){
+      if(event.source) event.source.postMessage({ type:'offline-failed' });
+    }
   })());
 });
 
@@ -98,7 +133,7 @@ self.addEventListener('fetch', function(event){
       return res;
     }catch(err){
       if(req.mode === 'navigate'){
-        var page = await cache.match('./index.html');
+        var page = await cache.match(new URL('./index.html', self.registration.scope).href);
         if(page) return page;
       }
       throw err;
