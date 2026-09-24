@@ -289,6 +289,7 @@ var END_FALLBACK = {
 };
 
 function endGame(key){
+  if(key === 'joined') state.flags.joined = true;   /* 결말 기록이 '두건을 안 썼다'고 말하지 않게 */
   var e = ENDINGS[key] || ENDINGS.death;
   document.body.classList.remove('is-final');
   showScreen('end');
