@@ -1,7 +1,7 @@
 /* 심연의 일지 — 오프라인 저장
    처음 열 때 게임·그림·글꼴을 전부 기기에 저장해 두고, 그 뒤로는 저장본으로 실행한다.
    게임을 고치면 VERSION 만 바꾸면 된다. 다음 실행 때 새 버전으로 바뀐다. */
-var VERSION  = '2026-09-24.121121';
+var VERSION  = '2026-09-24.121601';
 var CACHE    = 'blackpoint-' + VERSION;
 var FONT_CSS = 'https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600&family=Nanum+Myeongjo:wght@400;700&display=swap';
 var CORE     = [
@@ -45,7 +45,9 @@ var CORE     = [
 self.addEventListener('install', function(event){
   event.waitUntil((async function(){
     var cache = await caches.open(CACHE);
-    await cache.addAll(CORE);
+    /* 브라우저 캐시(GitHub Pages 는 10분)를 거치지 않고 서버에서 새로 받는다.
+       안 그러면 새 스크립트와 옛 화면이 섞여 저장될 수 있다. */
+    await cache.addAll(CORE.map(function(u){ return new Request(u, { cache:'reload' }); }));
 
     /* 글꼴: 스타일시트를 받아 그 안에 적힌 글꼴 파일까지 전부 저장한다.
        실패해도 게임은 기본 글꼴로 돌아가므로 설치를 막지 않는다. */
