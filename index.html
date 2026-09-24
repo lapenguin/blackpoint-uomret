@@ -1,0 +1,3325 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>심연의 일지</title>
+<meta name="robots" content="noindex, nofollow">
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#0e1513">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="심연의 일지">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600&family=Nanum+Myeongjo:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#0e1513; --void:#070a09; --panel:#121917; --line:#38311f;
+    --bone:#e2dac8; --bone-dim:#9d9584; --bone-faint:#6e6a5f;
+    --brass:#b08f55; --brass-dim:#4e4128;
+    --teal:#568690; --teal-dim:#1c3034;
+    --oxblood:#8c3c3c; --oxblood-dim:#3a1a1a;
+    --warn:#c99a4d;
+    --font-display:'Cinzel', Georgia, 'Times New Roman', serif;
+    --font-body:'Nanum Myeongjo', Georgia, 'Times New Roman', serif;
+  }
+  html{ color-scheme: dark; }
+  *{ box-sizing:border-box; }
+  body{
+    margin:0; min-height:100vh;
+    background: radial-gradient(ellipse 130% 50% at 50% -8%, #1a2622 0%, var(--ink) 55%, var(--void) 100%);
+    color: var(--bone); font-family: var(--font-body); font-size:16.5px; line-height:1.72;
+    display:flex; justify-content:center;
+    padding: calc(env(safe-area-inset-top, 0px) + 28px) 16px calc(env(safe-area-inset-bottom, 0px) + 60px);
+    overflow-x:hidden; transition: background .6s ease;
+  }
+  body.is-night{ background: radial-gradient(ellipse 130% 50% at 50% -8%, #101a22 0%, #080d11 55%, #04070a 100%); }
+  body.is-final{ background: radial-gradient(ellipse 130% 50% at 50% -8%, #2a1418 0%, #100a0b 55%, #050203 100%); }
+  #app{ width:100%; max-width:470px; }
+  .screen{ animation: fadein .4s ease; }
+  @keyframes fadein{ from{ opacity:0; transform:translateY(6px);} to{ opacity:1; transform:translateY(0);} }
+  @media (prefers-reduced-motion: reduce){ *{ animation:none !important; transition:none !important; } }
+
+  .masthead{ text-align:center; border-bottom:1px solid var(--line); padding-bottom:16px; margin-bottom:18px; }
+  .masthead h1{ font-family:var(--font-display); font-weight:600; font-size:1.7rem; letter-spacing:.03em; margin:0 0 6px; }
+  .subtitle{ margin:0; color:var(--brass); font-style:italic; font-size:.92rem; }
+  .kicker{ font-family:var(--font-display); font-size:.7rem; letter-spacing:.38em; color:var(--brass); margin:0 0 18px; text-align:center; }
+
+  .lede{ color:var(--bone-dim); font-size:1rem; margin:0 0 14px; }
+  .lede-small{ color:var(--bone-dim); font-size:.92rem; margin:0 0 12px; }
+  .lede b{ color:var(--bone); font-weight:700; }
+
+  .best-record{ font-size:.88rem; color:var(--teal); border:1px solid var(--teal-dim); padding:9px 12px; margin-bottom:18px; background:rgba(86,134,144,.08); }
+
+  .btn-primary{ display:block; width:100%; padding:13px 18px; background:var(--panel); border:1px solid var(--brass); color:var(--bone); font-family:var(--font-display); font-size:1.02rem; letter-spacing:.02em; cursor:pointer; }
+  .btn-primary:hover{ background:var(--brass-dim); }
+  .btn-primary:focus-visible{ outline:2px solid var(--brass); outline-offset:3px; }
+
+  .topbar{ display:flex; justify-content:space-between; align-items:center; gap:10px; font-size:.85rem; color:var(--bone-dim); margin-bottom:8px; font-variant-numeric:tabular-nums; }
+  .doom-wrap{ display:flex; align-items:center; gap:6px; }
+  .doom-label{ color:var(--warn); }
+
+  .stats{ border:1px solid var(--line); padding:12px 14px; margin-bottom:14px; background:var(--panel); }
+  .stat-row{ display:flex; align-items:center; gap:10px; margin-bottom:8px; }
+  .stat-row:last-child{ margin-bottom:0; }
+  .stat-name{ width:48px; flex-shrink:0; font-size:.85rem; color:var(--bone-dim); }
+  .pips{ display:flex; gap:3px; flex-wrap:wrap; }
+  .pip{ display:inline-block; width:11px; height:11px; border:1px solid var(--line); background:var(--void); }
+  .pip.filled.sanity{ background:var(--teal); border-color:var(--teal); }
+  .pip.filled.health{ background:var(--oxblood); border-color:var(--oxblood); }
+  .pip.filled.doom{ background:var(--warn); border-color:var(--warn); }
+  .pip.filled.watch{ background:var(--oxblood); border-color:var(--oxblood); }
+  .status-tag{ font-size:.78rem; margin-left:4px; }
+  .status-tag.wounded{ color:var(--warn); }
+  .status-tag.critical{ color:var(--oxblood); }
+
+  .journal-btn{ display:flex; align-items:center; gap:8px; width:100%; text-align:left; padding:0; background:none; border:0; color:var(--brass); font-family:var(--font-body); font-size:.9rem; cursor:pointer; }
+  .journal-btn .arrow{ margin-left:auto; color:var(--bone-dim); font-size:.8rem; }
+  .journal-btn:focus-visible{ outline:2px solid var(--brass); outline-offset:3px; }
+
+  .journal{ border:1px solid var(--line); border-top:0; padding:14px; margin:-14px 0 14px; background:var(--void); }
+  .journal h3{ font-family:var(--font-display); font-size:.92rem; color:var(--brass); margin:0 0 8px; font-weight:600; letter-spacing:.02em; }
+  .journal h3.spaced{ margin-top:18px; }
+  .journal .hint{ font-size:.82rem; color:var(--bone-faint); margin:0 0 10px; font-style:italic; }
+
+  .req-list{ list-style:none; margin:0 0 4px; padding:0; font-size:.9rem; }
+  .req-list li{ display:flex; gap:8px; padding:3px 0; color:var(--bone-dim); align-items:flex-start; }
+  .req-list li.met{ color:var(--teal); }
+  .req-mark{ width:14px; flex-shrink:0; }
+
+  .bearer{ border:1px solid var(--line); padding:9px 11px; margin-bottom:8px; background:var(--panel); }
+  .bearer.ready{ border-color:var(--teal); background:rgba(86,134,144,.08); }
+  .bearer.barred{ opacity:.55; }
+  .bearer-name{ font-size:.9rem; color:var(--bone); display:flex; align-items:center; gap:7px; }
+  .bearer-state{ font-size:.74rem; margin-left:auto; color:var(--bone-faint); white-space:nowrap; }
+  .bearer.ready .bearer-state{ color:var(--teal); }
+  .bearer-note{ font-size:.82rem; color:var(--bone-dim); margin-top:3px; }
+
+  .clue-entry{ border-left:2px solid var(--line); padding:2px 0 2px 10px; margin-bottom:10px; }
+  .clue-entry.derived{ border-left-color:var(--brass); }
+  .clue-entry.secret{ border-left-color:var(--oxblood); }
+  .clue-head{ font-size:.9rem; color:var(--bone); }
+  .clue-tag{ font-size:.72rem; color:var(--bone-dim); border:1px solid var(--line); padding:1px 5px; margin-left:6px; white-space:nowrap; }
+  .clue-entry.derived .clue-tag{ color:var(--brass); border-color:var(--brass-dim); }
+  .clue-entry.secret .clue-tag{ color:var(--oxblood); border-color:var(--oxblood-dim); }
+  .clue-body{ font-size:.86rem; color:var(--bone-dim); margin-top:2px; white-space:pre-line; }
+  .journal-empty{ font-size:.88rem; color:var(--bone-dim); font-style:italic; }
+
+  .map-wrap{ position:relative; height:290px; margin-bottom:6px; }
+  .map-lines{ position:absolute; inset:0; width:100%; height:100%; }
+  .map-lines line{ stroke:var(--line); stroke-width:.5; }
+  .map-lines line.dashed{ stroke-dasharray:2 2; stroke:var(--oxblood-dim); }
+  .map-lines line.known{ stroke:var(--brass-dim); stroke-dasharray:none; }
+  .map-node{ position:absolute; transform:translate(-50%,-50%); width:44px; height:44px; border-radius:50%; background:var(--panel); border:1px solid var(--line); color:var(--bone); display:flex; flex-direction:column; align-items:center; justify-content:center; font-size:1.05rem; cursor:pointer; padding:0; }
+  .map-node span{ display:block; font-size:.54rem; color:var(--bone-dim); margin-top:1px; font-family:var(--font-body); white-space:nowrap; }
+  .map-node.current{ border-color:var(--brass); box-shadow:0 0 0 3px rgba(176,143,85,.25); }
+  .map-node.reachable{ border-color:var(--teal-dim); }
+  .map-node.blocked{ opacity:.3; cursor:not-allowed; }
+  .map-node .dot{ position:absolute; top:-2px; right:-2px; width:9px; height:9px; border-radius:50%; background:var(--brass); border:1px solid var(--void); }
+  .map-node .dot.core{ background:var(--brass); width:11px; height:11px; top:-3px; right:-3px; box-shadow:0 0 0 2px rgba(176,143,85,.25); }
+  .map-node .dot.person{ background:var(--teal); }
+  .map-node .dot.lore{ background:var(--bone-faint); }
+  .map-node .dot.danger{ background:var(--oxblood); }
+  .map-node.route-next{ border-color:var(--teal); box-shadow:0 0 0 3px rgba(86,134,144,.5); animation: pulse 1.2s ease-in-out infinite; }
+  .map-node.route-dest{ border-color:var(--brass); box-shadow:0 0 0 3px rgba(176,143,85,.55); }
+
+  .lead-head{ font-size:.8rem; color:var(--brass); letter-spacing:.04em; margin:2px 0 6px; }
+  .lead-head span{ color:var(--bone-faint); font-size:.74rem; letter-spacing:0; }
+  .lead-list{ display:flex; flex-direction:column; gap:3px; margin:0 0 10px; }
+  .lead-row{ display:flex; align-items:baseline; gap:8px; width:100%; text-align:left; background:none; border:0;
+             border-left:2px solid var(--line); padding:5px 8px; color:var(--bone-dim); font-family:var(--font-body);
+             font-size:.86rem; line-height:1.45; cursor:pointer; }
+  .lead-row:hover, .lead-row.active{ background:rgba(176,143,85,.07); color:var(--bone); }
+  .lead-row:focus-visible{ outline:2px solid var(--brass); outline-offset:1px; }
+  .lead-row.core{ border-left-color:var(--brass); }
+  .lead-row.person{ border-left-color:var(--teal); }
+  .lead-row.danger{ border-left-color:var(--oxblood); }
+  .lead-row.unreachable{ opacity:.6; }
+  .lead-tag{ flex-shrink:0; font-size:.7rem; width:28px; color:var(--bone-faint); }
+  .lead-row.core .lead-tag{ color:var(--brass); }
+  .lead-row.person .lead-tag{ color:var(--teal); }
+  .lead-row.danger .lead-tag{ color:var(--oxblood); }
+  .lead-text{ flex:1; min-width:0; }
+  .lead-text b{ color:var(--bone); font-weight:700; }
+  .lead-dist{ flex-shrink:0; font-size:.74rem; color:var(--bone-faint); white-space:nowrap; font-variant-numeric:tabular-nums; }
+  .lead-dist.urgent{ color:var(--warn); }
+  .lead-empty{ font-size:.84rem; color:var(--bone-faint); font-style:italic; margin:0; }
+  .map-node:focus-visible{ outline:2px solid var(--brass); outline-offset:2px; }
+  .map-legend{ font-size:.78rem; color:var(--bone-faint); margin:0 0 14px; }
+
+  /* 삽화 — 없으면 스스로 숨는다. 있으면 듀오톤으로 눌러 한 세트처럼 보이게 한다 */
+  .art{ position:relative; margin:-18px -16px 16px; height:152px; overflow:hidden; border-bottom:1px solid var(--line); background:var(--void); }
+  .art img{ width:100%; height:100%; object-fit:cover; display:block;
+            filter:grayscale(.6) sepia(.28) contrast(1.06) brightness(.78) saturate(.85);
+            animation: artin .7s ease; }
+  @keyframes artin{ from{ opacity:0; transform:scale(1.04); } to{ opacity:1; transform:scale(1); } }
+  .art::after{
+    content:''; position:absolute; inset:0; pointer-events:none;
+    background:
+      linear-gradient(to bottom, rgba(7,10,9,.10) 0%, rgba(7,10,9,.30) 55%, rgba(18,25,23,.96) 100%),
+      radial-gradient(ellipse 80% 70% at 50% 42%, rgba(176,143,85,.10) 0%, transparent 55%),
+      radial-gradient(ellipse 95% 85% at 50% 45%, transparent 30%, rgba(7,10,9,.78) 100%);
+  }
+  .art.portrait{ height:190px; }
+  .art.portrait img{ object-position:50% 28%; }
+  body.is-night .art img{ filter:grayscale(.68) sepia(.14) contrast(1.08) brightness(.72) hue-rotate(-12deg); }
+  /* 초상은 얼굴이 payoff이므로 밤에도 덜 눌러둔다 */
+  body.is-night .art.portrait img{ brightness:1; filter:grayscale(.55) sepia(.12) contrast(1.05) brightness(.82) hue-rotate(-10deg); }
+  body.is-final .art img{ filter:grayscale(.45) sepia(.4) contrast(1.15) brightness(.7) saturate(1.1); }
+
+  /* 띠가 얇으니 가운데가 아니라 위쪽을 보여줘야 얼굴이 남는다 */
+  .char-portrait{ height:132px; object-fit:cover; object-position:50% 22%; display:block;
+                  margin:-14px -16px 12px; width:calc(100% + 32px);
+                  filter:grayscale(.55) sepia(.24) contrast(1.05) brightness(.84); border-bottom:1px solid var(--line); }
+
+  .event-panel{ border:1px solid var(--line); padding:18px 16px; margin-bottom:16px; background:var(--panel); position:relative; overflow:hidden; }
+  .event-panel::before{ content:""; position:absolute; inset:5px; border:1px solid rgba(176,143,85,.15); pointer-events:none; }
+  .event-panel.hit{ animation: shake .32s ease-in-out; }
+  @keyframes shake{
+    0%,100%{ transform:translateX(0); }
+    15%{ transform:translateX(-6px); }
+    35%{ transform:translateX(6px); }
+    55%{ transform:translateX(-4px); }
+    75%{ transform:translateX(3px); }
+  }
+  #event-title{ font-family:var(--font-display); font-size:1.1rem; font-weight:600; margin:0 0 10px; color:var(--brass); }
+  #event-place{ font-size:.74rem; color:var(--bone-faint); letter-spacing:.12em; margin:0 0 12px; }
+  #event-text{ margin:0 0 14px; white-space:pre-line; }
+
+  .doc-block{ border:1px solid var(--line); background:var(--void); padding:14px 16px; margin:0 0 14px; font-size:.9rem; line-height:1.85; white-space:pre-line; color:var(--bone-dim); }
+  .doc-block .doc-head{ font-family:var(--font-display); font-size:.68rem; letter-spacing:.22em; color:var(--brass); margin:0 0 10px; }
+
+  .dice-row{ display:flex; gap:16px; justify-content:center; margin-bottom:10px; }
+  .die{ font-size:3rem; line-height:1; color:var(--bone); display:inline-block; }
+  .die.rolling{ animation: tumble .16s linear infinite; color:var(--brass); }
+  .die.landed{ animation: land .18s ease-out; color:var(--bone); }
+  @keyframes tumble{
+    0%{ transform:rotate(-14deg) translateY(0) scale(.94); }
+    50%{ transform:rotate(14deg) translateY(-9px) scale(1.06); }
+    100%{ transform:rotate(-14deg) translateY(0) scale(.94); }
+  }
+  @keyframes land{ 0%{ transform:scale(1.3); } 60%{ transform:scale(.93); } 100%{ transform:scale(1); } }
+
+  .mods{ display:flex; gap:6px; flex-wrap:wrap; justify-content:center; margin:0 0 8px; }
+  .mod{ font-size:.76rem; border:1px solid var(--line); padding:2px 7px; color:var(--bone-dim); white-space:nowrap; }
+  .mod.plus{ color:var(--teal); border-color:var(--teal-dim); background:rgba(86,134,144,.07); }
+  .mod.minus{ color:var(--oxblood); border-color:var(--oxblood-dim); background:rgba(140,60,60,.07); }
+
+  .dice-info{ text-align:center; font-size:.85rem; color:var(--bone-dim); margin:0 0 10px; }
+  .dice-result{ text-align:center; font-size:.95rem; margin:0 0 14px; padding:7px; border:1px solid var(--line); font-variant-numeric:tabular-nums; animation: fadein .25s ease; }
+  .dice-result.success{ color:var(--teal); border-color:var(--teal-dim); background:rgba(86,134,144,.08); }
+  .dice-result.fail{ color:var(--oxblood); border-color:var(--oxblood-dim); background:rgba(140,60,60,.08); }
+
+  .track{ display:flex; gap:5px; justify-content:center; margin:0 0 12px; }
+  .track-step{ flex:1; height:4px; background:var(--void); border:1px solid var(--line); }
+  .track-step.done{ background:var(--brass); border-color:var(--brass); }
+  .track-step.now{ background:var(--oxblood); border-color:var(--oxblood); animation: pulse 1s ease-in-out infinite; }
+  @keyframes pulse{ 0%,100%{ opacity:1; } 50%{ opacity:.45; } }
+
+  .choices{ display:flex; flex-direction:column; gap:10px; }
+  .choice-btn{ text-align:left; padding:11px 14px; background:var(--void); border:1px solid var(--line); color:var(--bone); font-family:var(--font-body); font-size:.98rem; cursor:pointer; }
+  .choice-btn:hover{ border-color:var(--brass); background:#181f1c; }
+  .choice-btn:focus-visible{ outline:2px solid var(--brass); outline-offset:2px; }
+  .choice-note{ display:block; font-size:.8rem; color:var(--bone-faint); margin-top:3px; }
+  .choice-btn.weighty{ border-color:var(--oxblood-dim); }
+  .choice-btn.weighty:hover{ border-color:var(--oxblood); }
+  .roll-btn{ text-align:center; font-family:var(--font-display); letter-spacing:.02em; border-color:var(--brass); }
+  .roll-btn:hover{ background:var(--brass-dim); }
+
+  .inventory{ display:flex; align-items:flex-start; gap:10px; flex-wrap:wrap; font-size:.85rem; color:var(--bone-dim); margin:4px 0 14px; }
+  .inventory-items{ display:flex; gap:6px; flex-wrap:wrap; }
+  .inventory-empty{ font-style:italic; }
+  .item-chip{ border:1px solid var(--line); padding:4px 7px; background:var(--panel); font-size:.9rem; white-space:nowrap; color:var(--bone); font-family:var(--font-body); }
+  button.item-chip.usable{ cursor:pointer; border-color:var(--brass); }
+  button.item-chip.usable:hover{ background:var(--brass-dim); }
+
+  .end-stats{ display:flex; gap:16px; flex-wrap:wrap; margin-bottom:18px; color:var(--bone-dim); font-size:.92rem; }
+  .end-stats p{ margin:0; }
+  .end-log{ border:1px solid var(--line); padding:12px 14px; margin-bottom:22px; background:var(--panel); font-size:.9rem; color:var(--bone-dim); }
+  .end-log p{ margin:0 0 6px; }
+  .end-log p:last-child{ margin-bottom:0; }
+  .end-coda{ border-left:3px solid var(--oxblood-dim); padding-left:14px; margin:0 0 20px; color:var(--bone-dim); font-style:italic; white-space:pre-line; }
+
+  .char-card{ text-align:left; padding:14px 16px; background:var(--void); border:1px solid var(--line); color:var(--bone); font-family:var(--font-body); cursor:pointer; width:100%; }
+  .char-card:hover{ border-color:var(--brass); background:#181f1c; }
+  .char-card:focus-visible{ outline:2px solid var(--brass); outline-offset:2px; }
+  .char-name{ font-family:var(--font-display); font-size:1.05rem; color:var(--brass); margin-bottom:4px; }
+  .char-desc{ font-size:.92rem; color:var(--bone-dim); margin-bottom:6px; }
+  .char-stats{ font-size:.85rem; color:var(--teal); font-variant-numeric:tabular-nums; }
+  .char-banner{ font-size:.85rem; color:var(--bone-dim); border:1px solid var(--line); padding:6px 10px; margin-bottom:10px; background:var(--panel); }
+
+  [hidden]{ display:none !important; }
+
+  .offline-status{ font-size:.84rem; color:var(--bone-faint); margin:-6px 0 14px; }
+  .offline-status.ready{ color:var(--teal); }
+  .install-hint{ font-size:.86rem; color:var(--bone-dim); border:1px dashed var(--brass-dim); padding:9px 12px; margin:0 0 16px; line-height:1.6; }
+  .install-hint b{ color:var(--brass); }
+</style>
+</head>
+<body>
+<div id="app">
+
+  <section id="screen-title" class="screen">
+    <p class="kicker">심연의 일지</p>
+    <header class="masthead">
+      <h1>블랙포인트 사건</h1>
+      <p class="subtitle">1927년 가을, 매사추세츠 북부 해안</p>
+    </header>
+    <p class="lede">엘든 카터 교수의 마지막 편지가 도착한 건 석 달 전입니다. "그들이 다시 눈을 뜨려 한다." 그 문장을 끝으로 그는 편지도, 전화도 받지 않았습니다. 당신은 그를 찾아 지도에 거의 나오지 않는 항구 마을, 블랙포인트에 도착합니다.</p>
+    <p class="lede">이 마을은 백 년 동안 바다 밑의 것에게 값을 치러 왔습니다. 해마다 한 사람씩. 열이틀 뒤가 그믐이고, 그날 밤 다시 값이 청구됩니다.</p>
+    <p class="lede">알아내야 할 것은 <b>봉인하는 법</b>이 아닙니다. 그 방법은 이미 백 년 전에 적혀 있습니다. 알아내야 할 것은 <b>누가 그 값을 치를 수 있는가</b>, 그리고 <b>그 사람을 어떻게 움직이는가</b>입니다.</p>
+    <p id="best-record" class="best-record" hidden></p>
+    <p id="offline-status" class="offline-status" hidden></p>
+    <p id="install-hint" class="install-hint" hidden></p>
+    <button id="btn-start" class="btn-primary">조사 시작</button>
+  </section>
+
+  <section id="screen-select" class="screen" hidden>
+    <header class="masthead">
+      <h1>탐사자를 고르십시오</h1>
+      <p class="subtitle">누가 블랙포인트에 도착했는가</p>
+    </header>
+    <p class="lede-small">셋 다 카터를 찾아 왔습니다. 셋 다 그것만이 이유는 아닙니다.</p>
+    <div id="char-list" class="choices"></div>
+  </section>
+
+  <section id="screen-game" class="screen" hidden>
+    <div class="topbar">
+      <span id="date-label">10월 2일 · 낮</span>
+      <span class="doom-wrap"><span class="doom-label">그믐</span> <span id="doom-pips" class="pips"></span></span>
+    </div>
+    <div id="char-banner" class="char-banner"></div>
+    <div class="stats">
+      <div class="stat-row">
+        <span class="stat-name">정신력</span>
+        <div id="sanity-pips" class="pips"></div>
+        <span id="sanity-status" class="status-tag"></span>
+      </div>
+      <div class="stat-row">
+        <span class="stat-name">체력</span>
+        <div id="health-pips" class="pips"></div>
+        <span id="health-status" class="status-tag"></span>
+      </div>
+      <div class="stat-row">
+        <span class="stat-name">주시</span>
+        <div id="watch-pips" class="pips"></div>
+        <span id="watch-status" class="status-tag"></span>
+      </div>
+      <div class="stat-row" style="margin-top:10px;">
+        <button id="journal-toggle" class="journal-btn" aria-expanded="false" aria-controls="journal">
+          <span>일지 — 단서 <span id="clue-count">0</span>건</span>
+          <span id="journal-arrow" class="arrow">펼치기 ▾</span>
+        </button>
+      </div>
+    </div>
+
+    <div id="journal" class="journal" hidden>
+      <h3>그믐밤에 값을 치를 수 있는 사람</h3>
+      <p class="hint" id="bearer-hint">아직 무엇이 값인지조차 모릅니다.</p>
+      <div id="bearer-list"></div>
+      <h3 class="spaced">의식에 필요한 것</h3>
+      <ul id="req-list" class="req-list"></ul>
+      <h3 class="spaced">알아낸 것</h3>
+      <div id="clue-list"></div>
+    </div>
+
+    <div id="map-section">
+      <p class="lede-small" id="map-prompt">어디로 향하시겠습니까?</p>
+      <div class="map-wrap">
+        <svg class="map-lines" viewBox="0 0 100 100" preserveAspectRatio="none">
+          <line x1="50" y1="94" x2="24" y2="82"></line>
+          <line x1="50" y1="94" x2="76" y2="82"></line>
+          <line x1="24" y1="82" x2="50" y2="68"></line>
+          <line x1="76" y1="82" x2="50" y2="68"></line>
+          <line x1="24" y1="82" x2="12" y2="66"></line>
+          <line x1="76" y1="82" x2="88" y2="66"></line>
+          <line x1="12" y1="66" x2="16" y2="48"></line>
+          <line x1="88" y1="66" x2="84" y2="48"></line>
+          <line x1="50" y1="68" x2="16" y2="48"></line>
+          <line x1="50" y1="68" x2="84" y2="48"></line>
+          <line x1="16" y1="48" x2="6" y2="34"></line>
+          <line x1="16" y1="48" x2="28" y2="30"></line>
+          <line x1="84" y1="48" x2="50" y2="17"></line>
+          <line x1="28" y1="30" x2="50" y2="17"></line>
+          <line id="altar-path" class="dashed" x1="50" y1="17" x2="50" y2="4"></line>
+        </svg>
+        <button class="map-node" data-loc="harbor"     style="left:50%;top:94%;">⚓<span>부두</span></button>
+        <button class="map-node" data-loc="square"     style="left:24%;top:82%;">🏚️<span>광장</span></button>
+        <button class="map-node" data-loc="wharf"      style="left:76%;top:82%;">🐟<span>폐선창고</span></button>
+        <button class="map-node" data-loc="inn"        style="left:50%;top:68%;">🏮<span>여관</span></button>
+        <button class="map-node" data-loc="school"     style="left:12%;top:66%;">🏫<span>학교</span></button>
+        <button class="map-node" data-loc="lighthouse" style="left:88%;top:66%;">🗼<span>등대</span></button>
+        <button class="map-node" data-loc="manor"      style="left:16%;top:48%;">🕯️<span>저택</span></button>
+        <button class="map-node" data-loc="cave"       style="left:84%;top:48%;">🌊<span>동굴</span></button>
+        <button class="map-node" data-loc="well"       style="left:6%;top:34%;">⛲<span>마른우물</span></button>
+        <button class="map-node" data-loc="chapel"     style="left:28%;top:30%;">⛪<span>예배당</span></button>
+        <button class="map-node" data-loc="forest"     style="left:50%;top:17%;">🌫️<span>숲길</span></button>
+        <button class="map-node" data-loc="altar"      style="left:50%;top:4%;">🌲<span>제단</span></button>
+      </div>
+      <p class="lead-head">알아볼 곳 <span>— 누르면 가는 길이 표시됩니다</span></p>
+      <div id="lead-list" class="lead-list"></div>
+      <p class="map-legend">길로 이어진 곳으로만 움직입니다. 한 번 움직이면 반나절이 지납니다.</p>
+    </div>
+
+    <div class="inventory" id="inventory-bar">
+      <span>소지품</span>
+      <div id="inventory-items" class="inventory-items"><span class="inventory-empty">없음</span></div>
+    </div>
+
+    <div id="encounter-section" hidden>
+      <div class="event-panel">
+        <figure id="event-art" class="art" hidden><img id="event-art-img" alt=""></figure>
+        <h2 id="event-title"></h2>
+        <p id="event-place" hidden></p>
+        <p id="event-text"></p>
+        <div id="doc-area" hidden>
+          <div class="doc-block"><p class="doc-head" id="doc-head"></p><span id="doc-body"></span></div>
+        </div>
+        <div id="track-area" hidden><div id="track" class="track"></div></div>
+        <div id="dice-area" hidden>
+          <div class="dice-row"><span id="die1" class="die">⚀</span><span id="die2" class="die">⚀</span></div>
+          <div id="dice-mods" class="mods"></div>
+          <p id="dice-info" class="dice-info"></p>
+          <p id="dice-result-line" class="dice-result" hidden></p>
+        </div>
+        <div id="choices" class="choices"></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="screen-end" class="screen" hidden>
+    <header class="masthead">
+      <h1 id="end-title"></h1>
+      <p id="end-char" class="subtitle"></p>
+    </header>
+    <figure id="end-art" class="art" hidden><img id="end-art-img" alt=""></figure>
+    <p id="end-text" class="lede"></p>
+    <p id="end-coda" class="end-coda" hidden></p>
+    <div class="end-stats">
+      <p>최종 정신력: <span id="end-sanity"></span></p>
+      <p>최종 체력: <span id="end-health"></span></p>
+      <p>단서: <span id="end-clues"></span></p>
+    </div>
+    <div id="end-log" class="end-log"></div>
+    <button id="btn-restart" class="btn-primary">다시 조사하기</button>
+  </section>
+
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  /* =========================================================
+     데이터 — 세계
+     ========================================================= */
+
+  var DICE_FACES = ['⚀','⚁','⚂','⚃','⚄','⚅'];
+  var LAST_DAY = 13;      /* 그믐 — 도착한 날로부터 열이틀 뒤 */
+  var START_DATE = 1;     /* 첫날이 10월 2일 */
+
+  var ITEM_META = {
+    match:   { label:'성냥',        icon:'🔥', note:'사일러스의 창고에서. 어두운 곳을 살필 때 +1' },
+    whiskey: { label:'위스키',      icon:'🥃', note:'자베즈가 건넨 것. 마시면 정신력 +2, 체력 -1' },
+    cross:   { label:'은제 십자가',  icon:'✝️', note:'카터의 수첩 갈피에서. 쫓길 때 받는 피해 -1' },
+    gun:     { label:'카터의 권총',  icon:'🔫', note:'그에게서 빼앗은 것. 담력 +2' },
+    page:    { label:'찢겨나간 페이지', icon:'📜', note:'동굴 바닥에서. 봉인의 구절' },
+    key:     { label:'관리자의 열쇠', icon:'🔑', note:'마사의 것. 제단 아래를 연다' },
+    notebook:{ label:'해나의 공책',  icon:'📓', note:'학교 선생의 채집 기록. 조사 +1' },
+    flower:  { label:'마른 꽃',      icon:'🥀', note:'우물 바닥의 것. 쥐고 있으면 그 아이가 가까이 온다' },
+    bandage: { label:'붕대',        icon:'🩹', note:'쓰면 체력 +4' }
+  };
+
+  var LOC = {
+    harbor:     { name:'부두',          place:'블랙포인트 선착장' },
+    square:     { name:'마을 광장',      place:'블랙포인트 중심가' },
+    wharf:      { name:'폐선 창고',      place:'어시장 뒤편' },
+    school:     { name:'학교',          place:'마을 서편 · 폐교' },
+    inn:        { name:'마사의 여관',    place:'블랙포인트 유일의 여관' },
+    manor:      { name:'휘트필드 저택',  place:'언덕 위 · 버려진 집' },
+    well:       { name:'마른 우물',      place:'저택 뒤편 풀밭' },
+    lighthouse: { name:'등대',          place:'북쪽 곶' },
+    chapel:     { name:'낡은 예배당',    place:'마을 외곽' },
+    cave:       { name:'해안 동굴',      place:'절벽 아래' },
+    forest:     { name:'안개 숲길',      place:'마을 북쪽 숲' },
+    altar:      { name:'숲속 제단',      place:'숲 너머 · 절벽 위' }
+  };
+
+  /* 여관이 한가운데 있다. 마사가 이 마을 모든 길의 교차점에 앉아 있는 셈이다. */
+  var ADJ = {
+    harbor:     ['square','wharf'],
+    square:     ['harbor','wharf','inn','school'],
+    wharf:      ['harbor','square','inn','lighthouse'],
+    inn:        ['square','wharf','manor','cave'],
+    school:     ['square','manor'],
+    lighthouse: ['wharf','cave'],
+    manor:      ['school','inn','well','chapel'],
+    cave:       ['lighthouse','inn','forest'],
+    well:       ['manor'],
+    chapel:     ['manor','forest'],
+    forest:     ['chapel','cave','altar'],
+    altar:      ['forest']
+  };
+
+  /* ---------------------------------------------------------
+     단서 — 숫자가 아니라 기록
+     --------------------------------------------------------- */
+  var CLUES = {
+    /* 마을 */
+    boats:     { tag:'마을', title:'빈 배들',
+      text:'밤마다 배 몇 척이 바다로 나갔다가, 아침이면 그물도 사람도 없이 돌아온다. 자베즈는 그걸 "삯"이라고 불렀다.' },
+    flyer:     { tag:'사람', title:'실종자 전단',
+      text:'메리 휘트필드 · 당시 11세\n토머스 "늙은 톰" 개럿 · 당시 63세\n\n날짜가 없다. 종이 상태로 보아 몇십 년 된 것이다.' },
+    rhyme:     { tag:'마을', title:'아이들의 노래',
+      text:'"달이 없는 밤에는 문을 잠그고 / 이름을 부르거든 대답하지 마라 / 하나를 보내면 백 밤이 오고 / 백 밤이 지나면 다시 하나를."' },
+    register:  { tag:'사람', title:'여관 숙박부',
+      text:'엘든 카터, 9월 19일 투숙. 퇴실란은 비어 있다. 그 이후 이 여관에 든 손님은 당신뿐이다.' },
+    fishmen:   { tag:'교단', title:'길먼 일가의 눈',
+      text:'어시장 주인 오벳 길먼은 눈을 거의 깜빡이지 않는다. 목덜미에 접힌 자국이 세 줄. 그 집안 사람들이 다 그렇다고, 아무도 이상하게 여기지 않는다.' },
+    schism:    { tag:'교단', title:'갈라선 마을',
+      text:'"늙은 여자는 아직도 값을 치르면 잠든다고 믿지." 길먼이 웃었다. "우리는 안 믿어. 우리는 맞이할 거요. 맞이하는 쪽은 안 잡아먹히거든."' },
+    hannah:    { tag:'역사', title:'해나의 채집 공책',
+      text:'폐교 선생이 마을 아이들의 노래와 말버릇을 몇 해에 걸쳐 적어두었다. 마지막 장 여백에 다른 글씨로: "이걸 적는 것도 위험하다는 걸 이제 안다."' },
+    census:    { tag:'역사', title:'출석부의 공백',
+      text:'해마다 가을이면 한 명씩 이름이 지워져 있다. 전학도, 이사도 아니다. 그냥 다음 장부터 없다.' },
+    ledger:    { tag:'역사', title:'붉은 줄이 그어진 장부',
+      text:'휘트필드 가의 장부. 백 년 치 이름과 날짜. 대부분 붉은 줄로 지워져 있다.\n스물세 개의 이름. 그리고 맨 아래 — 엘든 카터 · 1927. 잉크가 아직 마르지 않았다.\n다음 줄은 비어 있다.' },
+    letter:    { tag:'사람', title:'그을린 편지',
+      text:'"그들이 다시 눈을 뜨려 한다." 당신을 이 마을로 부른 바로 그 문장. 그런데 필체가 카터의 것이 아니다. 여관 장부에서 곁눈으로 본 둥근 글씨다.' },
+    signal:    { tag:'교단', title:'등대의 신호',
+      text:'달 없는 밤이면 등대에 불이 켜진다. 바다를 향한 불이 아니다. 육지를 비추고 있다. 무엇이 올라올 길을 밝히는 것이다.' },
+    silas:     { tag:'교단', title:'사일러스의 고백',
+      text:'"불을 켜는 건 접니다. 안 켜면 등대를 무너뜨린다고 했으니까." 그믐밤, 물이 가장 많이 빠지는 그 한 시간. 그때뿐이다.' },
+    ritual:    { tag:'의식', title:'동굴의 성가',
+      text:'"잠든 것은 죽은 것이 아니며, 깨어남은 끝이 아니라 시작이니." 두건 쓴 스무 명 남짓. 그중 몇은 낮에 광장에서 본 얼굴이다.' },
+    journal:   { tag:'사람', title:'카터의 수첩',
+      text:'9월 3일 — 그저 오래된 미신이라 생각했다.\n9월 11일 — 그들의 말이 자꾸 맞아떨어진다.\n9월 19일 — 더는 예전으로 돌아갈 수 없을 것 같다. 그래도 상관없다.' },
+    bones:     { tag:'역사', title:'납골당의 셈',
+      text:'1827년, 1927년. 그 두 해 근처에서만 관이 비어 있다. 비어 있는 관의 수가 두 번 다 정확히 같다.' },
+    procession:{ tag:'교단', title:'제단으로 가는 행렬',
+      text:'두건을 쓴 이들이 줄지어 숲 안쪽으로 향한다. 걸음에 망설임이 없다. 저들은 길을 외우고 있다.' },
+    marks:     { tag:'지리', title:'나무의 표식',
+      text:'행렬이 지나간 나무마다 같은 모양이 새겨져 있다. 이것만 따라가면 안개 속에서도 제단에 닿는다.' },
+    wellcolor: { tag:'의식', title:'우물 바닥의 빛깔',
+      text:'물은 없는데 바닥이 젖어 있다. 그 젖은 자리가 어떤 각도에서는 빛깔을 띤다. 이름을 붙일 수 없는 빛깔이다. 오래 보면 눈이 아프다.' },
+    marydrown: { tag:'사람', title:'메리가 간 자리',
+      text:'우물 바닥에 마른 꽃이 깔려 있다. 백 년 가까이 누군가 계속 갈아 왔다는 뜻이다. 1847년, 열한 살짜리를 여기서 내려보냈다.' },
+    pact:      { tag:'의식', title:'마사의 고백',
+      text:'봉인은 제물로 유지된다. 한 사람씩, 제때. 마사는 백 년째 그 명단을 이어 적어 온 사람이다. 메리는 그녀의 고모다.' },
+    carterfate:{ tag:'사람', title:'카터가 걸어 들어간 이유',
+      text:'그는 홀린 것이 아니다. 먼저 알아내고, 스스로 제물이 되려 했다. 다만 자격이 없다는 것만 몰랐다. 그래서 죽지도 봉인되지도 못한 채 남아 있다.' },
+
+    /* 핵심 셋 */
+    phrase:    { tag:'의식', key:'구절', title:'봉인의 구절',
+      text:'느가 프타른 이아 크나아.\n\n읽는 순간 입 안에서 쇠 맛이 났다.' },
+    timing:    { tag:'의식', key:'시기', title:'그믐이라는 때',
+      text:'봉인이 얇아지는 것도, 다시 두꺼워지는 것도 그믐밤 그 한 번뿐이다. 하루만 어긋나도 구절은 그저 소리에 지나지 않는다.' },
+    blood:     { tag:'의식', key:'자격', title:'계약을 맺은 피',
+      text:'일라이어스 휘트필드의 기록. 백 년의 제물은 그것을 재운 적이 없다. 먹여 왔을 뿐이다.\n\n참된 봉인은 아무나의 목숨을 받지 않는다. 계약을 맺은 피 — 관리자 자신의 것이라야 한다.' },
+
+    /* 탐사자별 비밀 */
+    secret_reporter:{ tag:'비밀', secret:true, title:'캐서린 롤런드 · 1919',
+      text:'스물세 개의 이름 중 두 번째. 붉은 줄이 그어져 있다.\n\n당신은 취재하러 온 것이 아니었다. 팔 년 동안 동생을 찾았고, 마침내 찾았다. 장부의 한 줄로.' },
+    secret_doctor:{ tag:'비밀', secret:true, title:'바꾼 처방',
+      text:'장부 사이에 카터의 진료 기록 사본이 끼워져 있다. 누군가 옮겨 적은 것이다.\n\n"브레넌 선생이 처방을 바꾼 뒤로 꿈을 꾸지 않는다." 그것이 들어올 수 있는 문을, 당신이 열어주었다.' },
+    secret_sailor:{ tag:'비밀', secret:true, title:'1919년의 몫',
+      text:'그해 항목 옆에 작은 글씨로 주석이 달려 있다. "올해는 바다가 스스로 가져감. 선원 하나."\n\n팔 년 전 그 항로에서 당신이 살아남은 것은 운이 아니었다. 당신이 밀어 넣은 몫이 있었기 때문이다.' }
+  };
+
+  /* ---------------------------------------------------------
+     추론 — 두 개가 맞물려 결론이 된다
+     --------------------------------------------------------- */
+  var DEDUCTIONS = [
+    { id:'d_timing', need:['rhyme','flyer'], gives:'timing',
+      title:'두 가지가 맞물리다',
+      text:'아이들의 노래와 실종자 전단을 나란히 놓습니다. 노래가 말하는 "달이 없는 밤"과, 전단 뒤쪽에 연필로 적힌 날짜가 하나도 어긋나지 않습니다.\n\n이 마을에서 사람이 사라지는 날은 정해져 있었습니다. 그믐입니다.' },
+    { id:'d_timing2', need:['silas'], gives:'timing',
+      title:'등대지기가 말한 시각',
+      text:'사일러스의 말을 그대로 옮겨 적습니다. "그믐밤, 물이 가장 많이 빠지는 그 한 시간."\n\n그것들이 아무 때나 오지 않는다면, 막을 수 있는 때도 그 한 번뿐입니다.' },
+    { id:'d_martha', need:['ledger','letter'], gives:null, flag:'suspectMartha',
+      title:'같은 손이 쓴 글씨',
+      text:'장부의 이름들과 그을린 편지를 겹쳐 봅니다. 획의 기울기, 점을 찍는 버릇까지 같습니다.\n\n당신을 이곳으로 부른 편지를 쓴 사람은 엘든이 아닙니다. 명단을 적어 온 사람이, 당신을 불렀습니다.' },
+    { id:'d_carter', need:['journal','ritual'], gives:null, flag:'carterFindable',
+      title:'그가 어디 있는지 알겠다',
+      text:'수첩의 마지막 날짜와 동굴에서 들은 성가가 겹칩니다. 그는 잡혀간 것이 아닙니다. 9월 19일 밤, 제 발로 그들 쪽으로 걸어갔습니다.\n\n그렇다면 그는 아직 이 마을에 있습니다.' },
+    { id:'d_tribute', need:['boats','signal'], gives:null, flag:'knowTribute',
+      title:'삯의 정체',
+      text:'빈 배와 등대의 불빛이 한 줄로 이어집니다. 등대가 육지를 향해 불을 켜는 밤, 배는 무언가를 싣고 나갔다가 빈 채로 돌아옵니다.\n\n이 마을은 도망친 적이 없습니다. 백 년 동안 꼬박꼬박 값을 치러 왔을 뿐입니다.' },
+    { id:'d_century', need:['bones','census'], gives:null, flag:'knowCentury',
+      title:'셈이 맞는다',
+      text:'납골당에서 비어 있던 관의 수와, 출석부에서 지워진 이름의 수가 정확히 맞아떨어집니다. 해마다 하나씩, 빠짐없이.\n\n그리고 백 년에 한 번은 값이 크게 오릅니다. 올해가 그 해입니다.' },
+    { id:'d_schism', need:['fishmen','schism'], gives:null, flag:'knowSchism',
+      title:'두 패로 갈린 마을',
+      text:'마사는 값을 치르면 그것이 잠든다고 믿습니다. 길먼 쪽은 그 믿음을 버린 지 오래입니다.\n\n같은 것을 두고 한쪽은 달래려 하고, 한쪽은 맞이하려 합니다. 그래서 마을은 백 년 만에 처음으로 둘로 갈라졌습니다. 당신이 도착하기 직전에.' },
+    { id:'d_mary', need:['marydrown','flyer'], gives:null, flag:'knowMary',
+      title:'열한 살의 이름',
+      text:'전단의 첫 번째 이름과 우물 바닥의 마른 꽃이 이어집니다. 메리 휘트필드. 관리자의 핏줄이었고, 어려서 대신 보내졌습니다.\n\n그 아이는 어떻게 죽을지 선택하지 못했습니다. 아무도 묻지 않았으니까요.' }
+  ];
+
+  var CHARACTERS = {
+    reporter: {
+      name:'이디스 롤런드', role:'기자',
+      desc:'실종 사건을 쫓아 전국을 떠돌았습니다. 눈은 밝지만, 겁이 많다는 걸 스스로도 압니다.',
+      sanityMax:12, healthMax:9, obs:2, nerve:-1,
+      secret:'secret_reporter',
+      tie:'카터 교수는 3년 전 당신의 기사에 유일하게 답장을 보낸 학자였습니다. 그 뒤로 편지를 주고받는 사이가 되었습니다.',
+      called:'"기자라면 기록을 남기겠지요." 마사가 말합니다. "누군가는 이 마을이 어떻게 끝났는지 적어야 하니까."',
+      meetCarter:'"이디스." 그가 당신의 이름을 부릅니다. "자네 편지를 다 읽었네. 답장을 못 해서 미안하군."',
+      skillLabel:'카메라 플래시를 터뜨린다',
+      skillNote:'섬광으로 한 단계를 그냥 지나간다 · 추격당 1회',
+      selfCoda:'팔 년 동안 동생을 찾았습니다. 찾고 나서야, 찾는 것과 데려오는 것이 다른 일이라는 걸 알았습니다.\n물속으로 들어가면서, 처음으로 동생의 이름을 소리 내어 불렀습니다.',
+      fleeLetter:'수신인은 당신이 아니었습니다. 동생 사건을 함께 파던 후배 기자였습니다.'
+    },
+    doctor: {
+      name:'새뮤얼 브레넌', role:'의사',
+      desc:'왕진 가방을 늘 들고 다닙니다. 사람을 고치는 일에는 익숙하지만, 총은 잡아본 적이 없습니다.',
+      sanityMax:14, healthMax:10, obs:0, nerve:0, heal:2,
+      secret:'secret_doctor',
+      tie:'엘든의 불면증을 십 년 넘게 봐주었습니다. 마지막 진료에서 그는 "요즘은 꿈을 꾸지 않는다"고 했습니다.',
+      called:'"의사 선생이라면 산 사람과 죽은 사람을 구별할 줄 알겠군요." 마사가 말합니다. "여기선 그게 쉽지 않거든요."',
+      meetCarter:'"새뮤얼." 그가 웃습니다. "자네가 고쳐준 그 불면증 말이야. 이젠 잠들지 않아도 괜찮아졌다네."',
+      skillLabel:'숨을 고르고 상처를 싸맨다',
+      skillNote:'체력 +3 · 추격당 1회',
+      selfCoda:'당신이 연 문이었습니다.\n의사가 할 수 있는 마지막 처치는, 자기가 낸 상처를 자기 몸으로 막는 것뿐이었습니다.',
+      fleeLetter:'수신인은 당신이 아니었습니다. 불면증을 호소하던 다른 환자였습니다.'
+    },
+    sailor: {
+      name:'오토 마쉬', role:'전직 선원',
+      desc:'이십 년을 바다에서 보냈습니다. 몸은 튼튼하지만, 책을 읽는 일에는 젬병입니다.',
+      sanityMax:13, healthMax:12, obs:-1, nerve:2,
+      secret:'secret_sailor',
+      tie:'카터 교수를 개인적으로는 모릅니다. 다만 그가 쓴 논문에 당신이 바다에서 목격한 일이 적혀 있었고, 그래서 이곳에 왔습니다.',
+      called:'"당신은 예전에도 이 항로를 지났죠." 마사가 말합니다. "그때 무사히 지나간 건, 그것이 배부른 참이었기 때문이에요."',
+      meetCarter:'"자네가 마쉬로군." 처음 보는 얼굴인데도 그가 이름을 압니다. "바다에서 그것을 보고도 살아남은 사람."',
+      skillLabel:'험한 길로 돌아 나간다',
+      skillNote:'이번 판정 +3 · 추격당 1회',
+      selfCoda:'팔 년 전, 같은 상황에서 당신은 다른 사람을 밀었습니다.\n이번에는 밀지 않았습니다.',
+      fleeLetter:'수신인은 당신이 아니었습니다. 그때 같이 배를 탔던 사람의 아들이었습니다.'
+    }
+  };
+
+  /* 추격자 — 싸울 상대가 아니라 벗어나야 할 상황 */
+  var PURSUERS = {
+    cult:    { name:'두건 쓴 이들', dmg:2, dread:false,
+      desc:'등불 몇 개가 일정한 간격을 유지하며 따라옵니다. 뛰지 않습니다. 뛸 필요가 없다는 듯이.' },
+    towns:   { name:'마을 사람들',  dmg:2, dread:false,
+      desc:'낯익은 얼굴들이 말없이 에워쌉니다. 손에 들린 것은 연장입니다. 아무도 당신의 이름을 부르지 않습니다.' },
+    gilman:  { name:'길먼 쪽 사람들', dmg:3, dread:false,
+      desc:'젖은 발소리가 규칙적으로 따라붙습니다. 물갈퀴 달린 손이 젖은 판자를 긁습니다.' },
+    thing:   { name:'형체 없는 것',  dmg:3, dread:true,
+      desc:'그것은 일정한 모양을 유지하지 않습니다. 쳐다보는 것만으로 머리가 아픕니다. 그런데도 눈을 뗄 수가 없습니다.' }
+  };
+
+  var ENDINGS = {
+    seal_martha: { rank:10, title:'마사가 간다',
+      text:'그녀가 명단을 불 속에 던졌습니다. 백 년 치의 이름이 한꺼번에 타올랐습니다.\n\n"내 차례를 백 년이나 미뤘네요." 마사가 말했습니다. "고모한테 미안해서라도, 이제는."\n\n그녀는 뒤돌아보지 않고 걸어 들어갔습니다. 물살이 잦아들고, 갈라졌던 하늘이 서서히 닫혔습니다. 순환이 끝났습니다.' },
+    seal_mary: { rank:8, title:'메리가 간다',
+      text:'젖은 소녀가 당신과 제단 사이로 걸어 나왔습니다. 팔십 년 만에 처음으로, 가리키는 대신 스스로 움직였습니다.\n\n그녀도 휘트필드였습니다. 계약을 맺은 피였습니다. 다만 열한 살에는 아무도 그녀에게 선택을 묻지 않았습니다.\n\n이번에는 물었습니다. 그녀가 고개를 끄덕였습니다.\n\n물속으로 들어가는 그 아이의 등에서, 처음으로 물이 떨어지지 않았습니다.' },
+    seal_carter: { rank:9, title:'카터가 간다',
+      text:'엘든이 무리를 등지고 걸어 나왔습니다. 마지막으로 그의 눈이 제자리로 돌아와 있었습니다.\n\n"내가 하려던 게 이거였네." 그가 말했습니다. "그런데 자격이 없더군. 우습지."\n\n그는 자격이 없었고, 의식은 성립하지 않았습니다. 그때 젖은 소녀가 그의 옆에 섰습니다. 그녀에게는 자격이 있었습니다.\n\n두 사람이 함께 들어갔습니다. 엘든은 마지막에 웃고 있었습니다.' },
+    seal_self: { rank:7, title:'내가 간다',
+      text:'자격이 없다는 것은 압니다. 그래도 걸어 들어갔습니다.\n\n의식은 성립하지 않습니다. 다만 그것이 당신을 삼키는 동안, 마사가 뒤에서 구절을 외우기 시작했습니다. 처음에는 떨렸고, 곧 또렷해졌습니다.\n\n당신이 산 것은 시간입니다. 그 시간으로 그녀가 자기 차례를 치렀습니다.' },
+    seal_self_alone: { rank:5, title:'값이 되지 못하다',
+      text:'자격이 없다는 것은 압니다. 그래도 걸어 들어갔습니다.\n\n아무도 뒤에서 구절을 외우지 않았습니다. 마사는 이미 마을을 떠났고, 두건 쓴 이들은 당신이 삼켜지는 것을 조용히 지켜보았습니다.\n\n당신은 스물네 번째 이름이 되었을 뿐입니다.' },
+    boat: { rank:6, title:'마지막 배',
+      text:'자베즈가 밧줄을 풀자 배가 안개 속으로 미끄러집니다. 등 뒤에서 빛이 한 번 번쩍이고, 그다음엔 아무 소리도 나지 않습니다.\n\n이튿날 해안 경비대가 찾아간 자리에 블랙포인트는 없었습니다. 당신은 살아남았고, 아무도 당신의 증언을 믿지 않았습니다.' },
+    flee: { rank:4, title:'아무도 가지 않는다',
+      text:'뒤를 돌아보지 않고 달렸습니다. 등 뒤에서 누군가 당신의 이름을 불렀지만, 돌아보지 않았습니다.\n\n아침 해가 떴습니다. 블랙포인트는 아직 거기 있었습니다. 그것도 아직 거기 있었습니다.\n\n석 달 뒤, 당신의 책상에 낯선 편지 한 통이 도착했습니다. 둥근 글씨체였습니다. "그들이 다시 눈을 뜨려 한다."' },
+    flee_looked: { rank:3, title:'돌아본 대가',
+      text:'뒤를 돌아본 순간, 보아서는 안 될 것을 보고 말았습니다. 몸은 무사히 마을을 벗어났지만, 그 광경은 평생 눈앞에서 지워지지 않을 것입니다.\n\n석 달 뒤 도착한 편지의 둥근 글씨를 알아본 순간, 당신은 그것을 뜯지도 않고 불에 넣었습니다.' },
+    joined: { rank:1, title:'두건을 쓰다',
+      text:'어느 순간부터 그 구절이 낯설지 않았습니다. 두건을 받아 쓰고 원 안에 섭니다.\n\n"맞이하는 쪽은 안 잡아먹히거든." 길먼이 말했던 대로입니다. 이제 무섭지 않습니다. 무섭지 않다는 것이, 마지막까지 남은 유일한 감각입니다.' },
+    madness: { rank:1, title:'이성을 잃다',
+      text:'더 이상 눈앞의 것과 기억 속의 것을 구별할 수 없습니다. 몸은 살아 있지만, 그 사람은 이제 그곳에 없습니다.' },
+    death: { rank:0, title:'돌아오지 못한 자',
+      text:'장부의 비어 있던 다음 줄에, 마침내 이름 하나가 적혔습니다. 잉크가 아직 마르지 않았습니다.' }
+  };
+
+  /* ---------------------------------------------------------
+     지도에 적는 것 — 그곳에 가면 무엇이 걸려 있는가
+     tag: core(의식에 필요한 것) · person(결말을 바꾸는 사람) · lore(기록) · danger(위험)
+     until: 그 날짜가 지나면 사라지는 장면
+     --------------------------------------------------------- */
+  var LEAD_HINTS = {
+    h_jabez:    { tag:'lore',   text:'늙은 뱃사람에게 마을 사정을 묻는다' },
+    h_deal:     { tag:'person', text:'자베즈 — 그믐밤 배에 자리 하나' },
+    h_night:    { tag:'danger', text:'밤의 부두, 물 밖으로 나오는 것' },
+
+    s_flyer:    { tag:'core',   text:'실종자 전단 — 시기의 실마리' },
+    s_rhyme:    { tag:'core',   text:'아이들의 노래 — 시기의 실마리 (낮에만)' },
+    s_warn:     { tag:'danger', text:'광장의 눈총' },
+    s_empty:    { tag:'lore',   text:'문마다 그어진 표식' },
+
+    w_gilman:   { tag:'lore',   text:'눈을 깜빡이지 않는 주인' },
+    w_hold:     { tag:'danger', text:'폐선 창고 안쪽 — 저들의 준비' },
+    w_invite:   { tag:'person', text:'길먼의 제안 — 맞이하는 쪽의 길' },
+
+    sc_first:   { tag:'lore',   text:'9월 22일에 멈춘 교실' },
+    sc_hannah:  { tag:'lore',   text:'사라진 선생의 방' },
+    sc_desk:    { tag:'person', text:'맨 뒷자리 — 메리의 흔적' },
+
+    i_martha:   { tag:'person', text:'당신을 기다린 듯한 주인' },
+    i_room:     { tag:'person', text:'카터의 방 — 그가 남긴 것' },
+    i_confront: { tag:'person', text:'마사와 마주 앉는다 — 편지를 쓴 사람' },
+    i_truth:    { tag:'person', text:'마사에게 기록의 진실을 전한다' },
+    i_last:     { tag:'person', text:'명단의 마지막 빈 줄' },
+    i_flight:   { tag:'person', text:'카운터가 비어 있다' },
+
+    m_ledger:   { tag:'core',   text:'백 년 치 장부' },
+    m_secret:   { tag:'person', text:'장부에서 당신만 알아볼 이름' },
+    m_letter:   { tag:'person', text:'그을린 종이 — 당신을 부른 편지' },
+    m_portrait: { tag:'lore',   text:'초상화의 뒷면 — 첫 관리자' },
+    m_cellar:   { tag:'danger', text:'저택 지하' },
+
+    we_first:   { tag:'person', text:'물이 없는데 바닥이 젖어 있다' },
+    we_flower:  { tag:'person', text:'우물 바닥 — 메리가 간 자리' },
+    we_night:   { tag:'lore',   text:'밤의 우물가' },
+
+    l_silas:    { tag:'lore',   text:'문 앞을 지키는 등대지기' },
+    l_lens:     { tag:'lore',   text:'등명기 — 불빛의 방향' },
+    l_confess:  { tag:'core',   text:'사일러스의 고백 — 시기의 실마리', until:8 },
+    l_dead:     { tag:'core',   text:'사일러스의 쪽지' },
+
+    v_ritual:   { tag:'core',   text:'두건 쓴 이들의 의식 — 구절' },
+    v_deep:     { tag:'core',   text:'물 빠진 굴 — 제단으로 가는 길' },
+    v_gilman:   { tag:'lore',   text:'동굴의 리허설' },
+
+    c_journal:  { tag:'person', text:'불 켜진 예배당 — 카터의 흔적' },
+    c_pulpit:   { tag:'core',   text:'설교단 서랍 — 구절' },
+    c_ossuary:  { tag:'lore',   text:'연도가 적힌 관들' },
+    c_carter:   { tag:'person', text:'카터가 여기 있다' },
+
+    f_first:    { tag:'core',   text:'안개 속 울음소리 — 행렬과 표식' },
+    f_marks:    { tag:'core',   text:'나무의 표식 — 제단으로 가는 길' },
+    f_cabin:    { tag:'lore',   text:'사냥꾼의 오두막' },
+    f_hunt:     { tag:'danger', text:'숲길의 사람들' },
+
+    a_scout:    { tag:'core',   text:'바닥의 결' },
+    a_chamber:  { tag:'core',   text:'제단 아래 석실 — 자격' }
+  };
+
+  /* =========================================================
+     상태
+     ========================================================= */
+
+  var state = null;
+  var beatQueue = [];
+  var BR = String.fromCharCode(10) + String.fromCharCode(10);
+  var NL = String.fromCharCode(10);
+
+  function newState(charId){
+    var c = CHARACTERS[charId];
+    return {
+      charId:charId, char:c,
+      day:1, phase:0,                 /* 0 = 낮, 1 = 밤 */
+      sanity:c.sanityMax, sanityMax:c.sanityMax,
+      health:c.healthMax, healthMax:c.healthMax,
+      watch:0, watchMax:6,
+      location:'harbor',
+      clues:{}, clueOrder:[],
+      inventory:[], flags:{}, seen:{},
+      ammo:0, steps:0, leadAt:{}, log:[], tries:{}
+    };
+  }
+
+  /* =========================================================
+     유틸
+     ========================================================= */
+
+  function clampStat(v,max){ return Math.max(0, Math.min(max, v)); }
+  function rollSmall(sides){ return 1 + Math.floor(Math.random()*sides); }
+  function d6(){ return 1 + Math.floor(Math.random()*6); }
+  function pickOne(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
+  function shuffleArr(arr){
+    for(var i=arr.length-1;i>0;i--){
+      var j = Math.floor(Math.random()*(i+1));
+      var t=arr[i]; arr[i]=arr[j]; arr[j]=t;
+    }
+    return arr;
+  }
+  function isNight(){ return state.phase === 1; }
+  function daysLeft(){ return LAST_DAY - state.day; }
+  function dateLabel(){ return '10월 ' + (START_DATE + state.day) + '일 · ' + (isNight() ? '밤' : '낮'); }
+
+  function hasClue(id){ return !!state.clues[id]; }
+  function hasItem(id){ return state.inventory.indexOf(id) !== -1; }
+  function addItem(id){ if(!hasItem(id)) state.inventory.push(id); }
+  function removeItem(id){ var i=state.inventory.indexOf(id); if(i!==-1) state.inventory.splice(i,1); }
+  function clueCount(){ return state.clueOrder.length; }
+  function logLine(s){ if(state.log.indexOf(s) === -1) state.log.push(s); }
+
+  function gainClue(id){
+    if(!CLUES[id] || state.clues[id]) return false;
+    state.clues[id] = true;
+    state.clueOrder.push(id);
+    return true;
+  }
+
+  function healthStatus(){
+    if(state.health <= state.healthMax * 0.25) return 'critical';
+    if(state.health <= state.healthMax * 0.5) return 'wounded';
+    return 'ok';
+  }
+  function sanityStatus(){
+    if(state.sanity <= state.sanityMax * 0.25) return 'critical';
+    if(state.sanity <= state.sanityMax * 0.5) return 'wounded';
+    return 'ok';
+  }
+  function watchStatus(){
+    if(state.watch >= 5) return 'critical';
+    if(state.watch >= 3) return 'wounded';
+    return 'ok';
+  }
+
+  /* 보정은 합계가 아니라 내역으로 — 굴리기 전에 무엇이 얹혔는지 보여야 한다 */
+  function sumMods(mods){
+    var t = 0;
+    (mods||[]).forEach(function(m){ t += m.value; });
+    return t;
+  }
+  function obsMods(){
+    var m = [];
+    if(state.char.obs) m.push({ label:'관찰', value:state.char.obs });
+    if(hasItem('match')) m.push({ label:'성냥불', value:1 });
+    if(hasItem('notebook')) m.push({ label:'해나의 공책', value:1 });
+    var ss = sanityStatus();
+    if(ss === 'wounded') m.push({ label:'동요', value:-1 });
+    if(ss === 'critical') m.push({ label:'광기 직전', value:-2 });
+    if(isNight()) m.push({ label:'어둠', value:-1 });
+    return m;
+  }
+  function nerveMods(){
+    var m = [];
+    if(state.char.nerve) m.push({ label:'담력', value:state.char.nerve });
+    if(hasItem('gun')) m.push({ label:'권총', value:2 });
+    var hs = healthStatus();
+    if(hs === 'wounded') m.push({ label:'부상', value:-1 });
+    if(hs === 'critical') m.push({ label:'빈사', value:-2 });
+    return m;
+  }
+  /* 같은 곳을 다시 살피면 지난번에 봐둔 것이 도움이 된다.
+     핵심 단서가 주사위 한 번에 영영 막히지 않도록 하는 장치. */
+  function retryMod(sceneId){
+    var n = (state.tries && state.tries[sceneId]) || 0;
+    return n ? [{ label:'지난번에 봐둔 것', value:Math.min(3, n) }] : [];
+  }
+  function noteFail(sceneId){
+    state.tries = state.tries || {};
+    state.tries[sceneId] = (state.tries[sceneId] || 0) + 1;
+  }
+
+  function obsBonus(){ return sumMods(obsMods()); }
+  function nerveBonus(){ return sumMods(nerveMods()); }
+
+  function applyEffect(e){
+    if(!e) return;
+    if(e.sanity) state.sanity = clampStat(state.sanity + e.sanity, state.sanityMax);
+    if(e.health) state.health = clampStat(state.health + e.health, state.healthMax);
+    if(e.sanityMax){ state.sanityMax = Math.max(3, state.sanityMax + e.sanityMax); state.sanity = Math.min(state.sanity, state.sanityMax); }
+    if(e.item) addItem(e.item);
+    if(e.drop) removeItem(e.drop);
+    if(e.flag) state.flags[e.flag] = true;
+    if(e.watch) state.watch = clampStat(state.watch + e.watch, state.watchMax);
+    if(e.clue){
+      if(typeof e.clue === 'string') gainClue(e.clue);
+      else e.clue.forEach(gainClue);
+    }
+  }
+
+  /* =========================================================
+     값을 치를 수 있는 사람 — 이 게임의 목표
+     ========================================================= */
+
+  function footprintStage(){ return state.flags.mary3 ? 3 : (state.flags.mary2 ? 2 : (state.flags.mary1 ? 1 : 0)); }
+
+  function marthaReady(){
+    /* 연민 둘 + 진실을 보여주었을 것 */
+    return !!state.flags.marthaMercyMary && !!state.flags.marthaMercyLine && !!state.flags.marthaToldTruth;
+  }
+  function maryReady(){ return footprintStage() >= 3 && hasClue('blood'); }
+  function carterReady(){
+    return !!state.flags.carterPersuaded && !hasItem('gun') && maryReady();
+  }
+  function selfBacked(){ return !!state.flags.marthaToldTruth && !state.flags.marthaFled; }
+
+  function bearers(){
+    return [
+      { id:'martha', name:'마사 휘트필드', ready:marthaReady(),
+        note: marthaReady()
+          ? '진실을 알았고, 자기 차례라는 것도 받아들였습니다.'
+          : (state.flags.marthaFled
+              ? '떠났습니다. 백 년 만에 처음으로 관리자가 도망친 것입니다.'
+              : (hasClue('blood') && state.flags.marthaMercyMary
+                  ? '진실을 전할 수 있습니다. 여관으로 가십시오.'
+                  : (state.flags.suspectMartha && !state.flags.marthaDefied && !state.flags.marthaMercyMary
+                      ? '편지를 쓴 사람이 누구인지 압니다. 여관에서 마주 앉을 수 있습니다.'
+                      : (state.flags.metMartha
+                          ? (hasClue('blood') ? '자기 차례라고 말하게 하려면, 먼저 그녀의 사정을 들어야 했습니다.' : '관리자의 핏줄입니다. 다만 무엇이 값인지 당신이 아직 모릅니다.')
+                          : '여관 주인. 아직 제대로 이야기해 본 적이 없습니다.')))) },
+      { id:'mary', name:'메리 휘트필드', ready:maryReady(),
+        note: maryReady()
+          ? '팔십 년 만에 처음으로, 물어볼 수 있는 자리에 와 있습니다.'
+          : (footprintStage() > 0
+              ? '젖은 발자국 ' + footprintStage() + '/3 — 조금씩 가까워지고 있습니다.'
+              : '아직 아무것도 모릅니다. 이 마을에 남은 것이 산 사람뿐인지도.') },
+      { id:'carter', name:'엘든 카터', ready:carterReady(),
+        note: hasItem('gun')
+          ? '그의 총을 당신이 가지고 있습니다. 그는 이제 아무것도 내놓을 것이 없습니다.'
+          : (carterReady()
+              ? '자격은 없습니다. 다만 자격 있는 사람이 옆에 선다면.'
+              : (state.flags.carterMet ? '설득이 닿았는지는 그날 밤에야 알 수 있습니다.' : '아직 찾지 못했습니다.')) },
+      { id:'self', name:'당신', ready:true,
+        note: hasClue('blood')
+          ? (selfBacked() ? '자격은 없습니다. 시간은 살 수 있습니다. 뒤에서 구절을 이어줄 사람이 있다면.'
+                          : '자격도, 뒤를 이어줄 사람도 없습니다. 그저 스물네 번째 이름이 될 뿐입니다.')
+          : '언제든 걸어 들어갈 수는 있습니다. 그것이 무슨 뜻인지는 아직 모릅니다.' }
+    ];
+  }
+
+  function ritualReady(){ return hasClue('phrase') && hasClue('timing') && hasClue('blood'); }
+
+  /* =========================================================
+     화면
+     ========================================================= */
+
+  function showScreen(name){
+    ['title','select','game','end'].forEach(function(n){
+      document.getElementById('screen-'+n).hidden = (n !== name);
+    });
+  }
+
+  function renderPips(containerId, current, max, cls){
+    var el = document.getElementById(containerId);
+    el.innerHTML = '';
+    for(var i=0;i<max;i++){
+      var pip = document.createElement('span');
+      pip.className = 'pip' + (i < current ? ' filled '+cls : '');
+      el.appendChild(pip);
+    }
+  }
+
+  function updateStatsUI(){
+    renderPips('sanity-pips', state.sanity, state.sanityMax, 'sanity');
+    renderPips('health-pips', state.health, state.healthMax, 'health');
+    renderPips('watch-pips', state.watch, state.watchMax, 'watch');
+    renderPips('doom-pips', state.day, LAST_DAY, 'doom');
+
+    var ss = sanityStatus(), hs = healthStatus(), ws = watchStatus();
+    var sEl = document.getElementById('sanity-status');
+    var hEl = document.getElementById('health-status');
+    var wEl = document.getElementById('watch-status');
+    sEl.textContent = ss === 'critical' ? '광기 직전' : (ss === 'wounded' ? '동요' : '');
+    sEl.className = 'status-tag' + (ss !== 'ok' ? ' '+ss : '');
+    hEl.textContent = hs === 'critical' ? '빈사 상태' : (hs === 'wounded' ? '부상' : '');
+    hEl.className = 'status-tag' + (hs !== 'ok' ? ' '+hs : '');
+    wEl.textContent = ws === 'critical' ? '드러남' : (ws === 'wounded' ? '눈총' : '');
+    wEl.className = 'status-tag' + (ws !== 'ok' ? ' '+ws : '');
+
+    document.getElementById('clue-count').textContent = clueCount();
+    document.getElementById('char-banner').textContent = state.char.name + ' · ' + state.char.role;
+    document.getElementById('date-label').textContent =
+      dateLabel() + (daysLeft() > 0 ? ' — 그믐까지 ' + daysLeft() + '일' : ' — 오늘이 그믐');
+    document.body.classList.toggle('is-night', isNight());
+    renderJournal();
+  }
+
+  function renderJournal(){
+    /* 값을 치를 사람 */
+    var hint = document.getElementById('bearer-hint');
+    hint.textContent = hasClue('blood')
+      ? '참된 봉인은 계약을 맺은 피를 받습니다. 남은 것은 그 사람을 움직이는 일뿐입니다.'
+      : '아직 무엇이 값인지조차 모릅니다. 제단 아래를 열어야 합니다.';
+
+    var bl = document.getElementById('bearer-list');
+    bl.innerHTML = '';
+    bearers().forEach(function(b){
+      var box = document.createElement('div');
+      box.className = 'bearer' + (b.ready ? ' ready' : '') + (b.id === 'carter' && hasItem('gun') ? ' barred' : '');
+      var head = document.createElement('div');
+      head.className = 'bearer-name';
+      var nm = document.createElement('span'); nm.textContent = b.name;
+      var st = document.createElement('span');
+      st.className = 'bearer-state';
+      st.textContent = b.ready ? '준비됨' : '아직';
+      head.appendChild(nm); head.appendChild(st);
+      var note = document.createElement('div');
+      note.className = 'bearer-note';
+      note.textContent = b.note;
+      box.appendChild(head); box.appendChild(note);
+      bl.appendChild(box);
+    });
+
+    /* 의식 요건 */
+    var req = document.getElementById('req-list');
+    req.innerHTML = '';
+    [['구절','phrase','그들이 읊는 말이 어딘가 적혀 있을 것이다 — 동굴, 혹은 예배당'],
+     ['시기','timing','사람이 사라지는 날에는 규칙이 있다 — 광장·학교, 혹은 등대'],
+     ['자격','blood','백 년 전 첫 관리자가 무언가를 남겼다 — 제단 아래']].forEach(function(r){
+      var li = document.createElement('li');
+      var got = hasClue(r[1]);
+      li.className = got ? 'met' : '';
+      var mark = document.createElement('span');
+      mark.className = 'req-mark';
+      mark.textContent = got ? '✓' : '·';
+      var txt = document.createElement('span');
+      txt.textContent = r[0] + ' — ' + (got ? CLUES[r[1]].title : r[2]);
+      li.appendChild(mark); li.appendChild(txt);
+      req.appendChild(li);
+    });
+
+    /* 단서 */
+    var box = document.getElementById('clue-list');
+    box.innerHTML = '';
+    if(state.clueOrder.length === 0){
+      box.innerHTML = '<p class="journal-empty">아직 적을 것이 없습니다.</p>';
+      return;
+    }
+    state.clueOrder.forEach(function(id){
+      var c = CLUES[id];
+      var wrap = document.createElement('div');
+      wrap.className = 'clue-entry' + (c.key ? ' derived' : '') + (c.secret ? ' secret' : '');
+      var head = document.createElement('div');
+      head.className = 'clue-head';
+      head.textContent = c.title;
+      var tag = document.createElement('span');
+      tag.className = 'clue-tag';
+      tag.textContent = c.key ? ('핵심 · ' + c.key) : c.tag;
+      head.appendChild(tag);
+      var body = document.createElement('div');
+      body.className = 'clue-body';
+      body.textContent = c.text;
+      wrap.appendChild(head); wrap.appendChild(body);
+      box.appendChild(wrap);
+    });
+  }
+
+  function useWhiskey(){
+    if(!hasItem('whiskey')) return;
+    removeItem('whiskey');
+    applyEffect({ sanity:3, health:-1 });
+    updateStatsUI(); updateInventoryUI();
+  }
+  function useBandage(){
+    if(!hasItem('bandage')) return;
+    removeItem('bandage');
+    applyEffect({ health:4 });
+    updateStatsUI(); updateInventoryUI();
+  }
+
+  function updateInventoryUI(){
+    var box = document.getElementById('inventory-items');
+    box.innerHTML = '';
+    if(state.inventory.length === 0){
+      box.innerHTML = '<span class="inventory-empty">없음</span>';
+      return;
+    }
+    state.inventory.forEach(function(id){
+      var meta = ITEM_META[id];
+      if(!meta) return;
+      var usable = (id === 'whiskey') || (id === 'bandage');
+      if(usable){
+        var btn = document.createElement('button');
+        btn.className = 'item-chip usable';
+        btn.title = meta.note;
+        btn.textContent = meta.icon + ' ' + meta.label + (id === 'whiskey' ? ' (마시기)' : ' (쓰기)');
+        btn.addEventListener('click', id === 'whiskey' ? useWhiskey : useBandage);
+        box.appendChild(btn);
+      } else {
+        var chip = document.createElement('span');
+        chip.className = 'item-chip';
+        chip.title = meta.note;
+        chip.textContent = meta.icon + ' ' + meta.label + (id === 'gun' ? ' (탄 '+state.ammo+')' : '');
+        box.appendChild(chip);
+      }
+    });
+  }
+
+  function canReach(id){
+    if(id === state.location) return true;
+    if(ADJ[state.location].indexOf(id) === -1) return false;
+    if(id === 'altar' && !hasClue('marks')) return false;
+    return true;
+  }
+
+  function renderMap(){
+    document.getElementById('encounter-section').hidden = true;
+    document.getElementById('map-section').hidden = false;
+    updateStatsUI();
+    updateInventoryUI();
+
+    document.getElementById('map-prompt').textContent =
+      isNight() ? '밤입니다. 어디로 향하시겠습니까?' : '어디로 향하시겠습니까?';
+
+    var pathLine = document.getElementById('altar-path');
+    if(pathLine) pathLine.setAttribute('class', hasClue('marks') ? 'known' : 'dashed');
+
+    document.querySelectorAll('.map-node').forEach(function(btn){
+      var id = btn.dataset.loc;
+      var here = (id === state.location);
+      var ok = canReach(id) && !here;
+      btn.classList.toggle('current', here);
+      btn.classList.toggle('reachable', ok);
+      btn.classList.toggle('blocked', !ok && !here);
+      var old = btn.querySelector('.dot');
+      if(old) old.remove();
+      btn.classList.remove('route-next', 'route-dest');
+      var lead = state.leadAt[id];
+      btn.title = LOC[id].name + (lead ? ' — ' + lead.text : '');
+      if(lead){
+        var dot = document.createElement('span');
+        dot.className = 'dot ' + lead.tag;
+        btn.appendChild(dot);
+      }
+    });
+    renderLeads();
+  }
+
+  /* ---------------------------------------------------------
+     알아볼 곳 — 어디에 무엇이 걸려 있고, 몇 수 거리인가
+     --------------------------------------------------------- */
+  var TAG_ORDER = { core:0, person:1, lore:2, danger:3 };
+  var TAG_LABEL = { core:'핵심', person:'사람', lore:'기록', danger:'위험' };
+
+  /* 지금 자리에서 각 장소까지의 수와 첫걸음 */
+  function routesFrom(start){
+    var dist = {}, first = {};
+    dist[start] = 0;
+    var q = [start];
+    while(q.length){
+      var u = q.shift();
+      ADJ[u].forEach(function(v){
+        if(v === 'altar' && !hasClue('marks')) return;   /* 표식을 모르면 제단에 못 간다 */
+        if(dist[v] !== undefined) return;
+        dist[v] = dist[u] + 1;
+        first[v] = (u === start) ? v : first[u];
+        q.push(v);
+      });
+    }
+    return { dist:dist, first:first };
+  }
+
+  function clearRoute(){
+    document.querySelectorAll('.map-node').forEach(function(b){ b.classList.remove('route-next', 'route-dest'); });
+  }
+
+  function showRoute(loc){
+    var r = routesFrom(state.location);
+    clearRoute();
+    var dest = document.querySelector('.map-node[data-loc="' + loc + '"]');
+    if(dest && loc !== state.location) dest.classList.add('route-dest');
+    var step = r.first[loc];
+    if(step && step !== loc){
+      var n = document.querySelector('.map-node[data-loc="' + step + '"]');
+      if(n) n.classList.add('route-next');
+    }
+  }
+
+  function renderLeads(){
+    var box = document.getElementById('lead-list');
+    if(!box) return;
+    box.innerHTML = '';
+    var r = routesFrom(state.location);
+
+    var items = Object.keys(state.leadAt).map(function(loc){
+      return { loc:loc, l:state.leadAt[loc], d:r.dist[loc] };
+    });
+    items.sort(function(a, b){
+      var t = TAG_ORDER[a.l.tag] - TAG_ORDER[b.l.tag];
+      if(t) return t;
+      var da = (a.d === undefined) ? 99 : a.d, db = (b.d === undefined) ? 99 : b.d;
+      return da - db;
+    });
+
+    if(!items.length){
+      var empty = document.createElement('p');
+      empty.className = 'lead-empty';
+      empty.textContent = '당장 알아볼 곳이 떠오르지 않습니다. 일지를 다시 읽어 보십시오.';
+      box.appendChild(empty);
+      return;
+    }
+
+    items.slice(0, 6).forEach(function(x){
+      var row = document.createElement('button');
+      row.className = 'lead-row ' + x.l.tag + (x.d === undefined ? ' unreachable' : '');
+
+      var tag = document.createElement('span');
+      tag.className = 'lead-tag';
+      tag.textContent = TAG_LABEL[x.l.tag] || '';
+
+      var body = document.createElement('span');
+      body.className = 'lead-text';
+      var place = document.createElement('b');
+      place.textContent = LOC[x.loc].name;
+      body.appendChild(place);
+      body.appendChild(document.createTextNode(' · ' + x.l.text));
+
+      var dist = document.createElement('span');
+      dist.className = 'lead-dist';
+      var parts = [];
+      if(x.d === undefined) parts.push('길을 모름');
+      else if(x.d === 0) parts.push('지금 여기');
+      else parts.push(x.d + '수');
+      if(x.l.until){
+        var rem = x.l.until - state.day;
+        parts.push(rem <= 0 ? '오늘까지' : rem + '일 남음');
+        if(rem <= 2) dist.classList.add('urgent');
+      }
+      dist.textContent = parts.join(' · ');
+
+      row.appendChild(tag); row.appendChild(body); row.appendChild(dist);
+      row.addEventListener('click', function(){
+        var on = row.classList.contains('active');
+        box.querySelectorAll('.lead-row').forEach(function(rw){ rw.classList.remove('active'); });
+        if(on){ clearRoute(); return; }
+        row.classList.add('active');
+        showRoute(x.loc);
+      });
+      box.appendChild(row);
+    });
+  }
+
+  /* =========================================================
+     인카운터 표시
+     ========================================================= */
+
+  /* 삽화 — art/ 폴더에 파일이 있으면 뜨고, 없으면 조용히 사라진다.
+     그래서 그림을 한 장도 넣지 않아도 게임은 그대로 돌아간다. */
+  var ART_DIR = 'art/';
+  var ART_EXTS = ['.jpg', '.png', '.webp'];   /* 넣어준 확장자가 무엇이든 찾아낸다 */
+
+  /* 삽화 폴더의 위치는 호스팅 방식에 따라 달라진다.
+     아티팩트처럼 페이지 주소 끝에 슬래시가 없으면 'art/'가 한 단계 위로 해석되므로,
+     시작할 때 후보를 하나씩 찔러 보고 실제로 열리는 것을 쓴다. */
+  function artBaseCandidates(){
+    var path = location.pathname || '/';
+    var dir  = path.replace(/\/[^\/]*$/, '/');      /* .../index.html -> .../ */
+    var self = path.replace(/\/$/, '') + '/';       /* .../ID         -> .../ID/ */
+    var list = ['art/', dir + 'art/', self + 'art/', './art/'];
+    var seen = {}, out = [];
+    list.forEach(function(b){ if(!seen[b]){ seen[b] = 1; out.push(b); } });
+    return out;
+  }
+
+  var ART_READY = false;
+  var ART_WAITING = [];
+  function whenArtReady(fn){ if(ART_READY) fn(); else ART_WAITING.push(fn); }
+  function markArtReady(){
+    ART_READY = true;
+    var q = ART_WAITING; ART_WAITING = [];
+    q.forEach(function(f){ f(); });
+  }
+
+  /* 아무 그림이나 하나로 경로를 확인한다. 하나도 없으면 그냥 기본값으로 두고 넘어간다. */
+  function detectArtBase(){
+    var bases = artBaseCandidates();
+    var probes = ['loc-harbor', 'npc-martha', 'pc-reporter'];
+    var bi = 0, pi = 0;
+    (function step(){
+      if(bi >= bases.length) return markArtReady();
+      var im = new Image();
+      im.onload  = function(){ ART_DIR = bases[bi]; markArtReady(); };
+      im.onerror = function(){
+        pi += 1;
+        if(pi >= probes.length){ pi = 0; bi += 1; }
+        step();
+      };
+      im.src = bases[bi] + probes[pi] + ART_EXTS[0];
+    })();
+  }
+
+  /* 확장자를 차례로 시도하고, 다 없으면 onFail */
+  function loadArtInto(img, id, onOk, onFail){
+    whenArtReady(function(){
+      var i = 0;
+      function attempt(){
+        if(i >= ART_EXTS.length){ img.onerror = null; img.onload = null; return onFail(); }
+        img.src = ART_DIR + id + ART_EXTS[i++];
+      }
+      img.onerror = attempt;
+      img.onload  = function(){ onOk(); };
+      img.alt = '';
+      attempt();
+    });
+  }
+
+  function setArt(figId, imgId, ids){
+    var fig = document.getElementById(figId);
+    var img = document.getElementById(imgId);
+    if(!fig || !img) return;
+    fig.hidden = true;                        /* 뜰 때까지는 숨겨둔다 */
+    if(!ids || !ids.length) return;
+    var idx = 0;
+    (function tryNextId(){
+      if(idx >= ids.length){ fig.hidden = true; return; }
+      var id = ids[idx++];
+      loadArtInto(img, id,
+        function(){
+          fig.className = 'art' + (id.indexOf('npc-') === 0 ? ' portrait' : '');
+          fig.hidden = false;
+        },
+        tryNextId);
+    })();
+  }
+
+  function sceneArt(explicit){
+    if(explicit === null) return [];                   /* 명시적으로 끄기 */
+    var here = state ? ('loc-' + state.location) : null;
+    if(explicit) return here ? [explicit, here] : [explicit];
+    return here ? [here] : [];
+  }
+
+  function openEncounter(title, text, place, art){
+    setArt('event-art', 'event-art-img', sceneArt(art));
+    document.getElementById('map-section').hidden = true;
+    document.getElementById('encounter-section').hidden = false;
+    document.getElementById('event-title').textContent = title;
+    var pl = document.getElementById('event-place');
+    if(place){ pl.hidden = false; pl.textContent = place; }
+    else pl.hidden = true;
+    document.getElementById('event-text').textContent = text;
+    document.getElementById('doc-area').hidden = true;
+    document.getElementById('track-area').hidden = true;
+  }
+
+  function showDoc(head, body){
+    var area = document.getElementById('doc-area');
+    area.hidden = false;
+    document.getElementById('doc-head').textContent = head;
+    document.getElementById('doc-body').textContent = body;
+  }
+
+  function showTrack(total, current){
+    var area = document.getElementById('track-area');
+    area.hidden = false;
+    var t = document.getElementById('track');
+    t.innerHTML = '';
+    for(var i=1;i<=total;i++){
+      var s = document.createElement('div');
+      s.className = 'track-step' + (i < current ? ' done' : (i === current ? ' now' : ''));
+      t.appendChild(s);
+    }
+  }
+
+  function makeChoiceButton(c){
+    var btn = document.createElement('button');
+    btn.className = 'choice-btn' + (c.weighty ? ' weighty' : '');
+    btn.textContent = c.label;
+    if(c.note){
+      var n = document.createElement('span');
+      n.className = 'choice-note';
+      n.textContent = c.note;
+      btn.appendChild(n);
+    }
+    btn.addEventListener('click', function(){
+      var outcome = c.onPick();
+      if(outcome) showContinueWithText(outcome.text, outcome.next, outcome.doc);
+    });
+    return btn;
+  }
+
+  function showNarrativeBeat(title, text, nextFn, opts){
+    opts = opts || {};
+    openEncounter(title, text, opts.place, opts.art);
+    document.getElementById('dice-area').hidden = true;
+    if(opts.doc) showDoc(opts.doc[0], opts.doc[1]);
+    updateStatsUI(); updateInventoryUI();
+    var box = document.getElementById('choices');
+    box.innerHTML = '';
+    var btn = document.createElement('button');
+    btn.className = 'choice-btn';
+    btn.textContent = opts.label || '계속';
+    btn.addEventListener('click', function(){ nextFn(); });
+    box.appendChild(btn);
+  }
+
+  function showContinueWithText(text, nextFn, doc){
+    updateStatsUI(); updateInventoryUI();
+    document.getElementById('event-text').textContent = text;
+    if(doc) showDoc(doc[0], doc[1]);
+    var box = document.getElementById('choices');
+    box.innerHTML = '';
+    var btn = document.createElement('button');
+    btn.className = 'choice-btn';
+    btn.textContent = '계속';
+    btn.addEventListener('click', function(){ nextFn(); });
+    box.appendChild(btn);
+  }
+
+  function showChoiceEncounter(cfg){
+    openEncounter(cfg.title, cfg.text, cfg.place, cfg.art);
+    document.getElementById('dice-area').hidden = true;
+    if(cfg.doc) showDoc(cfg.doc[0], cfg.doc[1]);
+    if(cfg.track) showTrack(cfg.track[0], cfg.track[1]);
+    updateStatsUI(); updateInventoryUI();
+    var box = document.getElementById('choices');
+    box.innerHTML = '';
+    cfg.choices.forEach(function(c){
+      if(c.when && !c.when()) return;
+      box.appendChild(makeChoiceButton(c));
+    });
+  }
+
+  function animateDiceRoll(finalD1, finalD2, onComplete){
+    var d1el = document.getElementById('die1');
+    var d2el = document.getElementById('die2');
+    d1el.classList.add('rolling');
+    d2el.classList.add('rolling');
+    var ticks = 0, maxTicks = 14, landAt = maxTicks - 4, d1Landed = false;
+    var timer = setInterval(function(){
+      ticks++;
+      /* 먼저 멈춘 주사위는 다시 굴리지 않는다 — 안 그러면 눈과 결과가 어긋난다 */
+      if(!d1Landed) d1el.textContent = DICE_FACES[Math.floor(Math.random()*6)];
+      d2el.textContent = DICE_FACES[Math.floor(Math.random()*6)];
+      if(ticks === landAt){ d1Landed = true; d1el.classList.remove('rolling'); d1el.textContent = DICE_FACES[finalD1-1]; d1el.classList.add('landed'); }
+      if(ticks >= maxTicks){
+        clearInterval(timer);
+        d2el.classList.remove('rolling');
+        d2el.textContent = DICE_FACES[finalD2-1];
+        d2el.classList.add('landed');
+        setTimeout(function(){
+          d1el.classList.remove('landed');
+          d2el.classList.remove('landed');
+          onComplete();
+        }, 180);
+      }
+    }, 55);
+  }
+
+  function renderMods(mods, target){
+    var box = document.getElementById('dice-mods');
+    box.innerHTML = '';
+    (mods||[]).forEach(function(m){
+      if(!m.value) return;
+      var chip = document.createElement('span');
+      chip.className = 'mod ' + (m.value > 0 ? 'plus' : 'minus');
+      chip.textContent = m.label + ' ' + (m.value > 0 ? '+' : '') + m.value;
+      box.appendChild(chip);
+    });
+    if(!box.children.length){
+      var none = document.createElement('span');
+      none.className = 'mod';
+      none.textContent = '보정 없음';
+      box.appendChild(none);
+    }
+    var total = sumMods(mods);
+    document.getElementById('dice-info').textContent =
+      '주사위 2개 + 보정 ' + (total >= 0 ? '+' : '') + total + '  →  목표 ' + target + ' 이상';
+  }
+
+  function shakePanel(){
+    var panel = document.querySelector('.event-panel');
+    if(!panel) return;
+    panel.classList.remove('hit');
+    void panel.offsetWidth;
+    panel.classList.add('hit');
+  }
+
+  /* 모든 판정이 지나가는 한 곳 */
+  function showRollStep(cfg){
+    openEncounter(cfg.title, cfg.text, cfg.place, cfg.art);
+    if(cfg.track) showTrack(cfg.track[0], cfg.track[1]);
+    updateStatsUI(); updateInventoryUI();
+
+    var mods = (cfg.mods || []).concat(cfg.extra || []);
+    var bonus = sumMods(mods);
+
+    var diceArea = document.getElementById('dice-area');
+    diceArea.hidden = false;
+    document.getElementById('die1').textContent = DICE_FACES[0];
+    document.getElementById('die2').textContent = DICE_FACES[0];
+    renderMods(mods, cfg.target);
+
+    var resultLine = document.getElementById('dice-result-line');
+    resultLine.hidden = true;
+    resultLine.textContent = '';
+
+    var box = document.getElementById('choices');
+    box.innerHTML = '';
+
+    (cfg.altChoices || []).forEach(function(c){
+      if(c.when && !c.when()) return;
+      box.appendChild(makeChoiceButton(c));
+    });
+
+    var rollBtn = document.createElement('button');
+    rollBtn.className = 'choice-btn roll-btn';
+    rollBtn.textContent = cfg.rollLabel || '주사위를 굴린다';
+    rollBtn.addEventListener('click', function(){
+      box.innerHTML = '';
+      var a = d6(), b = d6();
+      animateDiceRoll(a, b, function(){
+        var total = a + b + bonus;
+        var success = total >= cfg.target;
+        resultLine.hidden = false;
+        resultLine.textContent = a + ' + ' + b +
+          (bonus ? (bonus > 0 ? ' + ' + bonus : ' − ' + Math.abs(bonus)) : '') +
+          ' = ' + total + '  /  목표 ' + cfg.target + '  —  ' + (success ? '성공' : '실패');
+        resultLine.className = 'dice-result ' + (success ? 'success' : 'fail');
+        if(!success) shakePanel();
+        cfg.onResolve(success, total);
+      });
+    });
+    box.appendChild(rollBtn);
+  }
+
+  function showDiceEncounter(cfg){
+    var mods = cfg.mods;
+    if(!mods){
+      mods = [];
+      if(cfg.bonus) mods.push({ label:'보정', value:cfg.bonus });
+    }
+    showRollStep({
+      title:cfg.title, text:cfg.text, place:cfg.place, art:cfg.art, target:cfg.target,
+      mods:mods, extra:cfg.extra, rollLabel:cfg.rollLabel, altChoices:cfg.altChoices,
+      onResolve:function(success, total){
+        var outcome = success ? cfg.onSuccess(total) : cfg.onFail(total);
+        updateStatsUI(); updateInventoryUI();
+        showContinueWithText(outcome.text, outcome.next, outcome.doc);
+      }
+    });
+  }
+
+  /* =========================================================
+     추격 — 싸우는 것이 아니라 벗어나는 것
+     ========================================================= */
+
+  var CAUGHT_LINES = [
+    '따라잡혔습니다. 팔이 붙잡히고, 뿌리치는 데 대가를 치릅니다.',
+    '발이 걸려 넘어집니다. 일어서는 사이에 거리가 사라집니다.',
+    '막다른 벽입니다. 되돌아 나오는 길밖에 없고, 그 길에는 그들이 있습니다.'
+  ];
+  var ESCAPE_LINES = [
+    '숨을 죽인 채 지나갑니다. 등불이 옆을 스치고, 멀어집니다.',
+    '담을 넘어 골목으로 빠집니다. 발소리가 엉뚱한 방향으로 흩어집니다.',
+    '한참을 웅크리고 있다가, 아무 소리도 나지 않게 되었을 때 일어섭니다.'
+  ];
+
+  function startChase(nextFn, opts){
+    opts = opts || {};
+    var foe = opts.foe || PURSUERS.cult;
+    var c = {
+      foe:foe, stage:1, stages:opts.stages || 2,
+      nextFn:nextFn, skillUsed:false,
+      title:opts.title || LOC[state.location].name,
+      place:opts.place || LOC[state.location].place,
+      art:opts.art,
+      onEscape:opts.onEscape || null,
+      caught:0
+    };
+    chaseStage(c, opts.text || foe.desc);
+  }
+
+  function chaseLine(c){
+    return c.foe.name + '   ·   남은 거리 ' + (c.stages - c.stage + 1);
+  }
+
+  function chaseStage(c, lead){
+    var choices = [];
+
+    choices.push({ label:'몸을 숨긴다', note:'관찰 판정 · 목표 6', onPick:function(){
+        chaseRoll(c, { target:6, mods:obsMods(), flavor:'그늘을 찾아 몸을 접어 넣습니다.', rollLabel:'숨을 죽인다' });
+        return null;
+    } });
+
+    choices.push({ label:'달린다', note:'담력 판정 · 목표 7', onPick:function(){
+        chaseRoll(c, { target:7, mods:nerveMods(), flavor:'뒤돌아보지 않고 내달립니다.', rollLabel:'달린다' });
+        return null;
+    } });
+
+    if(!c.skillUsed){
+      choices.push({ label:state.char.skillLabel, note:state.char.skillNote, onPick:function(){
+          c.skillUsed = true;
+          if(state.charId === 'reporter'){
+            c.stage += 1;
+            if(c.stage > c.stages) return finishChase(c, '섬광이 터지고, 그 틈에 모퉁이를 돕니다. 뒤에서 아무 소리도 따라오지 않습니다.');
+            chaseStage(c, '섬광이 터집니다. 눈이 먼 사이 한 구간을 통째로 벌었습니다.');
+            return null;
+          }
+          if(state.charId === 'doctor'){
+            applyEffect({ health:3 });
+            chaseStage(c, '벽에 등을 붙이고 숨을 고릅니다. 손이 기억하는 대로 상처를 싸맵니다. (체력 +3)');
+            return null;
+          }
+          c.sailorBoost = true;
+          chaseRoll(c, { target:7, mods:nerveMods(), extra:[{ label:'험한 길', value:3 }],
+                         flavor:'배에서 익힌 걸음으로, 아무도 안 쓰는 길을 골라 넘어갑니다.', rollLabel:'넘어간다' });
+          return null;
+      } });
+    }
+
+    if(hasItem('gun') && state.ammo > 0){
+      choices.push({ label:'허공에 한 발 쏜다', note:'남은 탄 ' + state.ammo + ' · 추격 즉시 중단 · 주시 +2', onPick:function(){
+          state.ammo -= 1;
+          applyEffect({ watch:2 });
+          return { text:'총성이 골목을 때립니다. 따라오던 발들이 일제히 멈춥니다.' + BR +
+                        '그들은 물러났습니다. 다만 이제 이 마을에서 총을 가진 사람이 누구인지 모두가 압니다.', next:c.nextFn };
+      } });
+    }
+
+    showChoiceEncounter({
+      title:c.title, place:c.place, art:c.art,
+      text:lead + BR + chaseLine(c),
+      track:[c.stages, c.stage],
+      choices:choices
+    });
+  }
+
+  function chaseRoll(c, cfg){
+    showRollStep({
+      title:c.title, place:c.place, art:c.art,
+      text:cfg.flavor + BR + chaseLine(c),
+      target:cfg.target, mods:cfg.mods, extra:cfg.extra,
+      rollLabel:cfg.rollLabel,
+      track:[c.stages, c.stage],
+      onResolve:function(success){
+        if(success){
+          c.stage += 1;
+          if(c.stage > c.stages) return finishChase(c, pickOne(ESCAPE_LINES));
+          return chaseStage(c, '한 구간을 벌었습니다. 아직 끝난 것은 아닙니다.');
+        }
+        caught(c);
+      }
+    });
+  }
+
+  function caught(c){
+    var dmg = rollSmall(c.foe.dmg);
+    if(c.caught === 0) dmg = Math.max(1, dmg - 1);   /* 첫 번째는 경고에 가깝다 */
+    if(hasItem('cross')) dmg = Math.max(1, dmg - 1);
+    var sanLoss = (c.foe.dread && Math.random() < 0.6) ? 1 : 0;
+    applyEffect({ health:-dmg, sanity:-sanLoss, watch:1 });
+    shakePanel();
+    c.caught += 1;
+
+    var msg = pickOne(CAUGHT_LINES) + BR + '체력 −' + dmg +
+      (hasItem('cross') ? ' (십자가가 한 점 덜어냈다)' : '') +
+      (sanLoss ? ' · 정신력 −' + sanLoss : '') + ' · 주시 +1';
+
+    if(state.health <= 0) return showContinueWithText(msg, function(){ endGame('death'); });
+    if(state.sanity <= 0) return showContinueWithText(msg, function(){ handleZeroSanity(c.nextFn); });
+
+    if(c.caught >= 2){
+      return showContinueWithText(msg + BR + '더는 버틸 수 없습니다. 그들이 당신을 마을 밖 길가에 내려놓고 돌아갑니다. 경고였습니다.',
+        function(){ state.location = 'harbor'; c.nextFn(); });
+    }
+    showContinueWithText(msg, function(){ chaseStage(c, '간신히 몸을 빼냈습니다. 아직 따라옵니다.'); });
+  }
+
+  function finishChase(c, text){
+    if(c.onEscape){
+      var extra = c.onEscape();
+      if(extra) text += BR + extra;
+    }
+    showContinueWithText(text, c.nextFn);
+  }
+
+  /* =========================================================
+     비트 큐 · 추론 · 젖은 발자국 · 턴 진행
+     ========================================================= */
+
+  function queueBeat(title, text, opts){ beatQueue.push({ title:title, text:text, opts:opts||{} }); }
+
+  function runBeats(done){
+    if(beatQueue.length === 0) return done();
+    var b = beatQueue.shift();
+    showNarrativeBeat(b.title, b.text, function(){ runBeats(done); }, b.opts);
+  }
+
+  function checkDeductions(){
+    DEDUCTIONS.forEach(function(d){
+      if(state.seen[d.id]) return;
+      if(d.gives && hasClue(d.gives)) return;   /* 이미 아는 것을 또 깨닫지는 않는다 */
+      if(!d.need.every(hasClue)) return;
+      state.seen[d.id] = true;
+      if(d.gives) gainClue(d.gives);
+      if(d.flag) state.flags[d.flag] = true;
+      var suffix = d.gives ? (BR + '— 핵심 단서 확보: ' + CLUES[d.gives].title + ' (' + CLUES[d.gives].key + ')') : '';
+      queueBeat('연결 — ' + d.title, d.text + suffix);
+      logLine('연결: ' + d.title);
+    });
+  }
+
+  /* --- 젖은 발자국: 세 번에 걸쳐, 조금씩 가까이 --- */
+  var INDOORS = ['inn','manor','school','chapel','office'];
+
+  function checkFootprints(){
+    var inside = INDOORS.indexOf(state.location) !== -1;
+
+    if(!state.flags.mary1 && state.day >= 3 && inside && hasClue('flyer')){
+      state.flags.mary1 = true;
+      logLine('젖은 발자국을 처음 보았다.');
+      return queueBeat('젖은 발자국 · 첫 번째',
+        '바닥에 젖은 발자국이 있습니다. 작습니다. 아이의 것입니다.' + BR +
+        '밖에서 안으로 들어온 방향인데, 다시 나간 자국이 없습니다.' + BR +
+        '비는 사흘째 오지 않았습니다.');
+    }
+
+    if(state.flags.mary1 && !state.flags.mary2 && isNight() && hasClue('ledger')){
+      state.flags.mary2 = true;
+      logLine('두 번째로, 더 가까이.');
+      return queueBeat('젖은 발자국 · 두 번째',
+        '등 뒤에서 물이 떨어지는 소리가 납니다. 규칙적입니다.' + BR +
+        '돌아보았을 때 아무도 없었고, 다만 방금까지 누군가 서 있었던 것처럼 바닥 한 자리가 젖어 있었습니다.' + BR +
+        '그 자리는 당신이 조금 전까지 등을 대고 있던 벽 바로 앞이었습니다.');
+    }
+
+    if(state.flags.mary2 && !state.flags.mary3 && hasItem('flower') &&
+       (state.location === 'well' || state.location === 'manor' || state.location === 'forest')){
+      state.flags.mary3 = true;
+      logLine('메리 휘트필드와 마주 섰다.');
+      var t = '마침내 마주쳤습니다.' + BR +
+        '열한 살쯤 된 소녀였습니다. 머리끝부터 발끝까지 물에 젖어 있었고, 옷은 팔십 년 전 것이었습니다. 물이 계속 떨어지는데 바닥에 고이지는 않았습니다.' + BR +
+        '주머니의 마른 꽃을 알아본 듯, 그 아이가 한 걸음 다가섭니다.' + BR +
+        '메리 휘트필드는 말을 하지 못했습니다. 턱이 움직이지 않았습니다. 대신 팔을 들어 한 방향을 가리켰습니다.' + BR +
+        '숲 너머, 절벽 위. 제단이었습니다.';
+      if(state.charId === 'sailor'){
+        t += BR + '그녀가 당신을 보았을 때, 가리키던 팔이 잠깐 흔들렸습니다. 그녀는 당신을 알아보았습니다. 정확히는, 당신이 한 일을 알아보았습니다.';
+      }
+      applyEffect({ sanity:-2, clue:'marydrown' });
+      return queueBeat('젖은 발자국 · 세 번째', t, { art:'npc-mary' });
+    }
+  }
+
+  function timedBeats(){
+    if(!state.seen['act2'] && state.day >= 5){
+      state.seen['act2'] = true;
+      queueBeat('창문마다 널빤지',
+        '사람들이 마을을 떠나기 시작했습니다. 짐수레가 새벽에 빠져나갔고, 남은 집들은 창문에 널빤지를 댔습니다.' + BR +
+        '밤이 되면 거리에 아무도 없습니다. 개조차 짖지 않습니다.');
+    }
+    if(!state.seen['act3'] && state.day >= 9){
+      state.seen['act3'] = true;
+      var t = '하늘이 낮에도 붉게 물듭니다. 남은 사람은 몇 되지 않습니다.' + BR +
+        '바닷물이 평소보다 한참 뒤로 물러나 있고, 드러난 갯벌에서 본 적 없는 것들이 말라가고 있습니다.';
+      if(state.flags.carterMet) t += BR + '골목 끝에서 낯익은 실루엣이 스쳐 지나간 듯해 돌아보지만, 아무도 없습니다.';
+      queueBeat('사흘 남은 마을', t);
+    }
+    if(!state.seen['eve'] && state.day === LAST_DAY){
+      state.seen['eve'] = true;
+      var e = '오늘이 그믐입니다. 정오가 지나자 바닷물이 눈에 띄게 물러갑니다.';
+      if(ritualReady()){
+        var ready = bearers().filter(function(b){ return b.ready && b.id !== 'self'; });
+        e += ready.length
+          ? BR + '구절도, 때도, 자격도 압니다. 그리고 갈 수 있는 사람이 있습니다. 해가 지기 전에 제단에 닿아야 합니다.'
+          : BR + '구절도, 때도, 자격도 압니다. 다만 갈 수 있는 사람을 아직 만들지 못했습니다.';
+      } else {
+        e += BR + '아직 모르는 것이 있습니다. 그래도 밤은 옵니다.';
+      }
+      queueBeat('그믐날', e);
+    }
+  }
+
+  function placeLead(){
+    state.leadAt = {};
+    Object.keys(SCENES).forEach(function(loc){
+      var list = SCENES[loc];
+      for(var i=0;i<list.length;i++){
+        var sc = list[i];
+        if(sc.quiet) continue;
+        if(!sc.repeat && state.seen[sc.id]) continue;
+        if(sc.when && !sc.when()) continue;
+        var h = LEAD_HINTS[sc.id] || { tag:'lore', text:LOC[loc].name };
+        state.leadAt[loc] = { id:sc.id, tag:h.tag, text:h.text, until:h.until };
+        return;
+      }
+    });
+  }
+
+  /* 정신력이 바닥나도 한 번은 돌아올 기회가 있다. 두 번은 없다. */
+  function handleZeroSanity(after){
+    if(state.flags.breakdownUsed) return endGame('madness');
+    state.flags.breakdownUsed = true;
+    state.sanity = Math.max(2, Math.ceil(state.sanityMax/3));
+    state.health = Math.max(1, state.health - 1);
+    state.location = 'harbor';
+    state.watch = Math.max(0, state.watch - 1);
+    logLine('한 번은 정신이 끊겼다가 돌아왔다.');
+    showNarrativeBeat('끊긴 자리',
+      '어느 순간부터의 기억이 없습니다.' + BR +
+      '정신을 차려 보니 부두의 밧줄 더미 위입니다. 옷은 젖었고, 손바닥이 까져 있습니다. 누가 여기까지 데려다 놓았는지, 스스로 걸어왔는지 알 수 없습니다.' + BR +
+      '다음에 이런 일이 또 생긴다면, 그때는 돌아오지 못할 것입니다.',
+      after);
+  }
+
+  function endTurn(){
+    if(state.health <= 0) return endGame('death');
+    if(state.sanity <= 0) return handleZeroSanity(advanceTime);
+    advanceTime();
+  }
+
+  function advanceTime(){
+    state.phase += 1;
+    if(state.phase > 1){ state.phase = 0; state.day += 1; }
+
+    if(state.day > LAST_DAY) return finale();
+    if(state.day === LAST_DAY && state.phase === 1) return finale();
+
+    /* 밤샘의 대가 — 지붕 아래라면 덜하다 */
+    if(isNight() && !state.flags.restedTonight && state.location !== 'inn' && state.location !== 'harbor'){
+      if(Math.random() < 0.2) applyEffect({ sanity:-1 });
+    }
+    state.flags.restedTonight = false;
+
+    /* 주시는 조금씩 가라앉는다 */
+    if(!isNight() && state.watch > 0 && Math.random() < 0.4) state.watch -= 1;
+
+    checkDeductions();
+    checkFootprints();
+    timedBeats();
+    placeLead();
+
+    var chased = nightPressure();
+    runBeats(function(){
+      if(chased){
+        return startChase(function(){ renderMap(); }, {
+          foe:chased,
+          title:LOC[state.location].name + ' · 밤',
+          text:'등 뒤에서 발소리가 따라붙습니다. 돌아보자, 이미 거리를 좁힌 뒤입니다.'
+        });
+      }
+      renderMap();
+    });
+  }
+
+  function nightPressure(){
+    if(!isNight()) return null;
+    var chance = 0.10 + state.watch * 0.08;
+    if(state.location === 'inn' || state.location === 'harbor') chance -= 0.12;
+    if(Math.random() > chance) return null;
+    if(state.watch >= 4) return PURSUERS.towns;
+    if(state.location === 'wharf' || state.location === 'cave' || state.location === 'harbor') return PURSUERS.gilman;
+    return PURSUERS.cult;
+  }
+
+  function afterScene(){ endTurn(); }
+
+  /* =========================================================
+     재방문 — 성과는 작지만 헛되지는 않게
+     ========================================================= */
+
+  var INVESTIGATE_SETUP = [
+    '을(를) 다시 살피며 놓친 것이 없는지 확인합니다.',
+    ' 구석구석을 되짚어 봅니다.',
+    '에서 사람들의 눈치를 살피며 조용히 캐묻습니다.',
+    '에서 처음 지나쳤던 것들을 다시 봅니다.',
+    '을(를) 한 번 더 훑어봅니다.'
+  ];
+  var INVESTIGATE_FAIL = [
+    '별다른 소득 없이 불안한 마음만 커집니다.',
+    '건질 것은 없고 시간만 흘려보냅니다.',
+    '무언가 있다는 느낌만 강해질 뿐, 손에 잡히는 것은 없습니다.',
+    '이상한 낌새만 느낄 뿐, 확실한 것은 없습니다.'
+  ];
+
+  function genericInvestigate(locId){
+    var name = LOC[locId].name;
+    showDiceEncounter({
+      title:name, place:LOC[locId].place,
+      text:name + pickOne(INVESTIGATE_SETUP),
+      target:6, mods:obsMods(),
+      onSuccess:function(){
+        var pool = [];
+        if(!hasItem('bandage')) pool.push(function(){
+          addItem('bandage');
+          return '약통에서 쓸 만한 붕대를 챙깁니다.';
+        });
+        if(!hasItem('whiskey')) pool.push(function(){
+          addItem('whiskey');
+          return '반쯤 남은 위스키 병을 주머니에 넣습니다.';
+        });
+        if(hasItem('gun') && state.ammo < 5) pool.push(function(){
+          state.ammo += 2;
+          return '서랍 안쪽에서 탄약 두 발을 찾아냅니다.';
+        });
+        pool.push(function(){
+          applyEffect({ sanity:1, watch:-1 });
+          return '별것 아닌 것을 확인했을 뿐인데, 마음이 조금 가라앉습니다. 한동안 당신을 보던 시선도 흥미를 잃은 듯합니다.';
+        });
+        return { text:pickOne(pool)(), next:afterScene };
+      },
+      onFail:function(){
+        applyEffect({ sanity:-1 });
+        return { text:pickOne(INVESTIGATE_FAIL) + ' (정신력 −1)', next:afterScene };
+      }
+    });
+  }
+
+  var DREAMS = [
+    '꿈에서 당신은 물속을 걷고 있습니다. 숨이 막히지 않는 것이 이상하지 않습니다. 저 아래, 도시만 한 것이 천천히 돌아눕습니다.',
+    '꿈에서 마을 사람들이 광장에 모여 있습니다. 모두 당신을 보고 웃으며 고개를 끄덕입니다. 그중에 엘든도 있습니다.',
+    '꿈에서 누군가 당신의 이름을 부릅니다. 대답하려다 노래 가사가 떠올라 입을 다뭅니다. 부르는 소리는 밤새 그치지 않습니다.',
+    '꿈에서 당신은 명단을 읽고 있습니다. 맨 아래 줄에 적힌 이름을 보려 할 때마다 글씨가 흐려집니다.',
+    '꿈에서 우물 바닥에 서 있습니다. 위를 올려다보면 둥근 하늘이 아주 작고, 그 가장자리에 사람들이 둘러서서 내려다보고 있습니다. 아무도 손을 내밀지 않습니다.'
+  ];
+  function pickDream(){
+    var d = pickOne(DREAMS);
+    if(Math.random() < 0.45) applyEffect({ sanity:-1 });
+    return d;
+  }
+
+  /* =========================================================
+     장면
+     ========================================================= */
+
+  var SCENES = {
+
+    /* ---------------- 부두 ---------------- */
+    harbor: [
+      { id:'h_jabez', run:function(){
+        showChoiceEncounter({
+          title:'뱃사람 자베즈', place:LOC.harbor.place, art:'npc-jabez',
+          text:'그물을 손질하던 노인이 당신을 훑어봅니다. "육지 사람이 이맘때 여기 올 일이 없을 텐데."' + BR +
+               '손질하던 그물에는 잡힌 것이 하나도 없습니다.',
+          choices:[
+            { label:'카터 교수에 대해 묻는다', onPick:function(){
+                applyEffect({ clue:'register', watch:1 });
+                return { text:'"그 학자 양반? 여관에 들었다가, 그러고는 못 봤소." 노인이 목소리를 낮춥니다. "마사한테 숙박부나 보여달라 하쇼. 퇴실란이 비었을 거요."' + BR +
+                              '말해놓고 그는 주위를 한 번 둘러봅니다. 누군가 들었을까 봐입니다.', next:afterScene };
+            } },
+            { label:'요즘 바다 사정을 묻는다', onPick:function(){
+                applyEffect({ clue:'boats', item:'whiskey' });
+                return { text:'"고기가 안 잡히는 게 아니오. 안 오는 거지." 그가 바다 쪽으로 턱짓합니다. "밤에 배 몇 척이 나갔다 오는데, 빈 채로 돌아와. 나간 건 안 빈 채였고."' + BR +
+                              '무엇을 싣고 나갔느냐고 묻자, 그는 대답 대신 주머니에서 위스키 병을 꺼내 건넵니다. "이 얘긴 맨정신으로 하는 게 아니오."', next:afterScene };
+            } }
+          ]
+        });
+      } },
+      { id:'h_deal', when:function(){ return state.day >= 5 && state.seen['h_jabez']; }, run:function(){
+        showChoiceEncounter({
+          title:'자베즈의 제안', place:LOC.harbor.place, art:'npc-jabez',
+          text:'노인이 배의 밧줄을 점검하고 있습니다. "나는 그믐 전에 뜰 거요."' + BR +
+               '그가 당신을 봅니다. "자리 하나는 비워두리다. 그믐밤에 여기 오면 태워주겠소. 대신 그때는 기다려주지 않아."',
+          choices:[
+            { label:'"자리를 남겨 주시오."', onPick:function(){
+                applyEffect({ flag:'boatOffer', sanity:1 });
+                logLine('자베즈가 그믐밤의 배에 자리를 남겼다.');
+                return { text:'노인이 고개를 한 번 끄덕입니다. 돌아갈 길이 하나 생겼다는 사실만으로도 숨이 조금 쉬어집니다.', next:afterScene };
+            } },
+            { label:'"나는 남을 겁니다."', onPick:function(){
+                applyEffect({ sanity:-1, flag:'refusedBoat' });
+                return { text:'노인은 한참 당신을 보다가 그물로 눈을 돌립니다. "그 학자 양반도 그렇게 말했소."', next:afterScene };
+            } }
+          ]
+        });
+      } },
+      { id:'h_night', when:function(){ return isNight() && state.day >= 4; }, run:function(){
+        showDiceEncounter({
+          title:'물 밖으로 나온 것', place:LOC.harbor.place,
+          text:'밤의 부두는 비어 있습니다. 다만 물에 잠긴 계단 쪽에서, 젖은 발이 나무를 밟는 소리가 규칙적으로 들립니다.',
+          target:7, mods:obsMods(),
+          onSuccess:function(){
+            applyEffect({ sanity:-1, clue:'signal' });
+            return { text:'숨을 죽이고 지켜봅니다. 그것들은 물 밖으로 나와 등대 쪽을 한참 바라보다가, 불빛이 한 번 흔들리자 다시 물로 돌아갑니다.' + BR +
+                          '불빛은 수평선이 아니라 육지를 향해 있었습니다. 저들이 올라올 길을 밝히는 것이었습니다.', next:afterScene };
+          },
+          onFail:function(){
+            applyEffect({ sanity:-2, watch:1 });
+            return { text:'발밑의 판자가 삐걱입니다. 소리가 멎고, 젖은 얼굴들이 일제히 이쪽을 향합니다.', next:function(){
+              startChase(afterScene, { foe:PURSUERS.gilman, title:'젖은 계단' });
+            } };
+          }
+        });
+      } },
+      { id:'h_rest', repeat:true, quiet:true, run:function(){
+        showChoiceEncounter({
+          title:'부두에서 숨을 고르다', place:LOC.harbor.place,
+          text:'밧줄 더미에 앉아 잠시 숨을 고릅니다. 파도 소리만은 아직 평범합니다.',
+          choices:[
+            { label:'몸을 추스른다', note:'체력 +' + (3 + (state.char.heal||0)), onPick:function(){
+                applyEffect({ health: 3 + (state.char.heal||0) });
+                return { text: state.char.heal ? '왕진 가방을 열어 능숙하게 상처를 처치합니다.' : '상처를 돌보고 나니 한결 낫습니다.', next:afterScene };
+            } },
+            { label:'마음을 가다듬는다', note:'정신력 +5 · 주시 -1', onPick:function(){
+                applyEffect({ sanity:5, watch:-1 });
+                return { text:'파도 소리를 들으며 머릿속을 정리합니다. 한동안 당신을 보던 시선들도 흥미를 잃은 듯합니다.', next:afterScene };
+            } }
+          ]
+        });
+      } }
+    ],
+
+    /* ---------------- 광장 ---------------- */
+    square: [
+      { id:'s_flyer', run:function(){
+        showChoiceEncounter({
+          title:'광장의 전단', place:LOC.square.place,
+          text:'낮의 블랙포인트는 밤보다 나을 것이 없습니다. 상점 절반이 닫혀 있고, 열린 곳도 손님이 없습니다. 사람들은 당신을 보면 눈을 내리깝니다. 적의는 아닙니다. 차라리 미안함에 가깝습니다.' + BR +
+               '게시판에 전단 한 장이 남아 있습니다. 비에 젖었다 마르기를 반복해 종이가 물결칩니다.',
+          choices:[
+            { label:'전단을 떼어 뒷면까지 살핀다', onPick:function(){
+                applyEffect({ clue:'flyer', watch:1 });
+                return { text:'앞면에는 이름 둘. 뒷면에는 연필로 적힌 날짜 몇 개가 희미하게 남아 있습니다.' + BR +
+                              '적어두려는데, 광장 건너편 창문의 커튼이 조용히 닫힙니다.', next:afterScene,
+                         doc:['실종자 수배', '메리 휘트필드 · 당시 11세\n토머스 "늙은 톰" 개럿 · 당시 63세\n소식을 아시는 분은 마을 사무소로'] };
+            } },
+            { label:'지나가는 사람에게 말을 건다', onPick:function(){
+                applyEffect({ sanity:-1 });
+                return { text:'중년 여자가 걸음을 멈추지 않은 채 말합니다. "묻지 말고, 그믐 전에 가세요." 그게 전부입니다.', next:afterScene };
+            } }
+          ]
+        });
+      } },
+      { id:'s_rhyme', when:function(){ return !isNight(); }, run:function(){
+        showChoiceEncounter({
+          title:'아이들의 노래', place:LOC.square.place,
+          text:'광장 한구석에서 아이 셋이 줄넘기를 하며 노래를 부릅니다. 곡조는 흔한 동요인데, 가사가 이상합니다.',
+          choices:[
+            { label:'가사를 끝까지 듣는다', onPick:function(){
+                applyEffect({ clue:'rhyme' });
+                return { text:'아이들은 뜻도 모르고 부릅니다. 지켜보던 어른 누구도 말리지 않습니다.', next:afterScene,
+                         doc:['아이들의 줄넘기 노래', '달이 없는 밤에는 문을 잠그고\n이름을 부르거든 대답하지 마라\n하나를 보내면 백 밤이 오고\n백 밤이 지나면 다시 하나를'] };
+            } },
+            { label:'누가 가르쳐줬는지 묻는다', onPick:function(){
+                applyEffect({ clue:'rhyme', watch:1, sanity:-1 });
+                return { text:'"학교 선생님이요." 가장 작은 아이가 대답합니다. "근데 선생님은 이제 없어요."' + BR +
+                              '그 순간 다른 아이가 그 아이의 손을 잡아끌고, 셋 다 뒤도 안 돌아보고 달아납니다.', next:afterScene };
+            } }
+          ]
+        });
+      } },
+      { id:'s_warn', when:function(){ return state.day >= 5 && state.watch >= 2; }, run:function(){
+        showChoiceEncounter({
+          title:'광장의 눈들', place:LOC.square.place,
+          text:'광장에 들어서자 대화가 멎습니다. 남자 둘이 길을 막지는 않은 채, 딱 지나가기 불편할 만큼만 서 있습니다.' + BR +
+               '"그만 물어보고 다니쇼. 우리도 당신이 무사히 가길 바라는 거요."',
+          choices:[
+            { label:'사과하고 물러난다', note:'주시 -2', onPick:function(){
+                applyEffect({ watch:-2 });
+                return { text:'고개를 숙이고 돌아섭니다. 등 뒤에서 다시 대화가 이어집니다. 낮은 목소리로.', next:afterScene };
+            } },
+            { label:'"무사히 가지 못한 사람이 몇입니까?"', onPick:function(){
+                applyEffect({ watch:1, clue:'flyer' });
+                return { text:'한 사람의 얼굴이 굳습니다. "…그건 우리가 정한 게 아니오." 그가 내뱉고는 자리를 뜹니다.' + BR +
+                              '남은 사람은 아무 말도 하지 않았지만, 부정도 하지 않았습니다.', next:afterScene };
+            } }
+          ]
+        });
+      } },
+      { id:'s_empty', when:function(){ return state.day >= 9; }, run:function(){
+        showChoiceEncounter({
+          title:'문마다 그어진 표식', place:LOC.square.place,
+          text:'광장을 둘러싼 집들의 문마다 흰 칠로 표식이 그어져 있습니다. 어떤 집은 하나, 어떤 집은 둘. 표식이 없는 집은 문이 열린 채 비어 있습니다.',
+          choices:[
+            { label:'표식을 세어 본다', onPick:function(){
+                applyEffect({ sanity:-1 });
+                var extra = '';
+                if(hasClue('schism')){ applyEffect({ clue:'procession' }); extra = ' 하나는 맞이하는 쪽, 둘은 아직 값을 치르는 쪽입니다. 길먼의 표식이 훨씬 많습니다.'; }
+                return { text:'표식이 있는 집은 남고, 없는 집은 비었습니다. 남은 자와 바쳐진 자를 나눈 표식입니다.' + extra, next:afterScene };
+            } },
+            { label:'빈 집에 들어가 본다', onPick:function(){
+                applyEffect({ health:-1 });
+                if(!hasItem('match')){ addItem('match'); return { text:'식탁에 식사가 차려진 채로 식어 있습니다. 부엌 선반에서 성냥갑을 챙겨 나옵니다. 가져가도 뭐랄 사람이 없습니다.', next:afterScene }; }
+                addItem('bandage');
+                return { text:'식탁에 식사가 차려진 채로 식어 있습니다. 서랍에서 붕대를 챙깁니다. 가져가도 뭐랄 사람이 없습니다.', next:afterScene };
+            } }
+          ]
+        });
+      } }
+    ],
+
+    /* ---------------- 폐선 창고 ---------------- */
+    wharf: [
+      { id:'w_gilman', run:function(){
+        showChoiceEncounter({
+          title:'어시장의 길먼', place:LOC.wharf.place, art:'npc-gilman',
+          text:'어시장은 아직 문을 엽니다. 팔 것이 거의 없는데도 그렇습니다.' + BR +
+               '주인 오벳 길먼이 당신을 맞습니다. 눈을 거의 깜빡이지 않습니다. 목덜미에 접힌 자국이 세 줄 나 있는데, 흉터라고 하기엔 너무 가지런합니다.',
+          choices:[
+            { label:'그의 얼굴을 똑바로 본다', onPick:function(){
+                applyEffect({ clue:'fishmen', sanity:-1 });
+                return { text:'그가 먼저 웃습니다. "다들 우리 집안 얼굴을 보면 그럽디다." 손님을 쫓는 말투가 아니라, 자랑에 가까웠습니다.' + BR +
+                              '"우리는 여기 오래 살았소. 아주 오래."', next:afterScene };
+            } },
+            { label:'마사에 대해 묻는다', onPick:function(){
+                applyEffect({ clue:'schism', watch:1 });
+                return { text:'"늙은 여자는 아직도 값을 치르면 잠든다고 믿지." 길먼이 생선 손질하던 칼을 내려놓습니다. "우리는 안 믿어. 우리는 맞이할 거요."' + BR +
+                              '"맞이하는 쪽은 안 잡아먹히거든."', next:afterScene };
+            } }
+          ]
+        });
+      } },
+      { id:'w_hold', when:function(){ return state.seen['w_gilman']; }, run:function(){
+        showDiceEncounter({
+          title:'폐선 창고 안쪽', place:LOC.wharf.place,
+          text:'어시장 뒤편에 물 위로 반쯤 기울어진 폐선이 묶여 있습니다. 선창에서 사람 소리가 납니다. 생선 냄새로 덮으려 했지만 덮이지 않는 다른 냄새도 납니다.',
+          target:7, mods:obsMods(), extra:[{ label:'밤', value:isNight() ? 2 : 0 }],
+          onSuccess:function(){
+            applyEffect({ clue:['schism','procession'], sanity:-1, watch:1 });
+            return { text:'선창 바닥에 두건이 개어져 쌓여 있습니다. 스무 벌이 넘습니다. 그 옆에 마을 명부 사본이 펼쳐져 있고, 이름 절반에 동그라미가 쳐져 있습니다.' + BR +
+                          '동그라미 없는 이름 옆에는 다른 표시가 있습니다. 광장의 빈 집들과 수가 맞습니다.', next:afterScene };
+          },
+          onFail:function(){
+            applyEffect({ watch:2 });
+            return { text:'판자가 크게 울립니다. 선창 안의 소리가 뚝 끊기고, 발소리 여럿이 동시에 일어섭니다.', next:function(){
+              startChase(afterScene, { foe:PURSUERS.gilman, title:'폐선 창고' });
+            } };
+          }
+        });
+      } },
+      { id:'w_invite', when:function(){ return state.day >= 8 && hasClue('schism'); }, run:function(){
+        showChoiceEncounter({
+          title:'길먼의 제안', place:LOC.wharf.place, art:'npc-gilman',
+          text:'길먼이 당신을 기다리고 있었던 것처럼 문 앞에 서 있습니다. 손에 두건 하나가 들려 있습니다.' + BR +
+               '"당신도 알잖소. 저 늙은 여자 방식으론 안 된다는 걸. 백 년을 해봤는데 안 됐으니까."' + BR +
+               '"그믐밤에 원 안에 서면 되오. 그게 전부요."',
+          choices:[
+            { label:'두건을 받는다', note:'그믐밤에 다른 길이 열린다', weighty:true, onPick:function(){
+                applyEffect({ flag:'cultOffer', sanity:-1 });
+                logLine('길먼에게서 두건을 받았다.');
+                return { text:'받아 든 천이 생각보다 무겁습니다. 소금기에 절어 뻣뻣합니다.' + BR +
+                              '"버려도 상관없소." 길먼이 말합니다. "그날 밤이 되면 어차피 알게 될 테니."', next:afterScene };
+            } },
+            { label:'거절한다', onPick:function(){
+                applyEffect({ watch:2, sanity:1 });
+                return { text:'그가 어깨를 으쓱합니다. "그럼 그쪽은 값을 치르는 쪽이군." 문이 닫힙니다.' + BR +
+                              '그날 이후로 어시장 사람들이 당신을 보는 눈이 달라졌습니다.', next:afterScene };
+            } }
+          ]
+        });
+      } }
+    ],
+
+    /* ---------------- 학교 ---------------- */
+    school: [
+      { id:'sc_first', run:function(){
+        showChoiceEncounter({
+          title:'문 닫은 학교', place:LOC.school.place,
+          text:'교실 하나짜리 학교입니다. 문은 잠겨 있지 않습니다. 칠판에 쓰다 만 글씨가 아직 남아 있고, 날짜는 9월 22일에서 멈춰 있습니다.' + BR +
+               '아이들 책상에 물건이 그대로입니다. 누구도 짐을 챙겨 나가지 않았습니다.',
+          choices:[
+            { label:'교탁을 살핀다', onPick:function(){
+                applyEffect({ item:'notebook', clue:'hannah' });
+                return { text:'서랍에서 두꺼운 공책이 나옵니다. 표지에 "해나 프라이스"라고 적혀 있습니다.' + BR +
+                              '마을 아이들의 노래와 말버릇을 몇 해에 걸쳐 채집한 기록입니다. 학자의 것처럼 꼼꼼합니다.', next:afterScene,
+                         doc:['해나의 공책 · 마지막 장', '아이들이 부르는 노래는 만들어진 것이 아니라 전해진 것이다. 가사가 지역마다 다른데, 이 마을 것만 유독 구체적이다.\n\n이걸 적는 것도 위험하다는 걸 이제 안다.'] };
+            } },
+            { label:'출석부를 넘겨 본다', onPick:function(){
+                applyEffect({ clue:'census', sanity:-1 });
+                return { text:'해마다 가을이면 한 명씩 이름이 지워져 있습니다. 전학도, 이사도 아닙니다. 그냥 다음 장부터 없습니다.' + BR +
+                              '지워진 자리마다 선생의 글씨로 작게 "가을"이라고만 적혀 있습니다.', next:afterScene };
+            } }
+          ]
+        });
+      } },
+      { id:'sc_hannah', when:function(){ return state.seen['sc_first'] && hasClue('hannah'); }, run:function(){
+        showDiceEncounter({
+          title:'해나 프라이스는 어디로 갔나', place:LOC.school.place,
+          text:'선생의 방은 교실 뒤에 붙어 있습니다. 옷장에 옷이 그대로 걸려 있고, 여행 가방도 그대로입니다. 떠난 사람의 방이 아닙니다.',
+          target:7, mods:obsMods(),
+          onSuccess:function(){
+            applyEffect({ clue:'census', sanity:-1 });
+            var got = '';
+            if(!hasItem('bandage')){ addItem('bandage'); got = ' 서랍에서 붕대도 챙깁니다.'; }
+            return { text:'침대 밑에서 찢어진 종이 뭉치가 나옵니다. 공책에서 뜯어낸 장들입니다. 본인이 뜯은 것 같지는 않습니다.' + BR +
+                          '남은 조각 하나에 이렇게 적혀 있습니다. "그들은 내가 무엇을 적는지 안다. 오늘 밤 창밖에 사람이 서 있었다. 아이 키만 했고, 젖어 있었다."' + got, next:afterScene };
+          },
+          onFail:function(){
+            applyEffect({ sanity:-2 });
+            return { text:'옷장 문을 여는 순간 바닥이 젖어 있는 것을 봅니다. 물 자국이 옷장 안쪽에서 시작해 방 한가운데에서 끊깁니다.' + BR +
+                          '더 보고 싶지 않아 문을 닫습니다.', next:afterScene };
+          }
+        });
+      } },
+      { id:'sc_desk', when:function(){ return state.day >= 6 && state.seen['sc_first']; }, run:function(){
+        showChoiceEncounter({
+          title:'맨 뒷자리', place:LOC.school.place,
+          text:'교실 맨 뒷자리 책상 하나만 유난히 낡았습니다. 나무가 다른 것보다 훨씬 오래되었고, 상판에 이름이 새겨져 있습니다.' + BR +
+               '메리 W. 팔십 년 전 책상이 왜 아직 이 교실에 있는지, 아무도 설명해 준 적이 없습니다.',
+          choices:[
+            { label:'책상 안을 들여다본다', onPick:function(){
+                applyEffect({ sanity:-1, clue:'flyer' });
+                return { text:'서랍 안에 마른 꽃이 한 송이 들어 있습니다. 바스라질 만큼 오래된 것인데, 놓인 자리가 흐트러지지 않았습니다.' + BR +
+                              '누군가 계속 갈아 놓고 있거나, 아무도 건드린 적이 없거나 둘 중 하나입니다.', next:afterScene };
+            } },
+            { label:'그 자리에 앉아 본다', onPick:function(){
+                applyEffect({ sanity:-2, flag:'satAtDesk' });
+                return { text:'앉는 순간 옷이 젖습니다. 일어나 보면 의자는 말라 있습니다.' + BR +
+                              '창밖을 보면 우물이 보입니다. 이 자리에서만 보입니다.', next:afterScene };
+            } }
+          ]
+        });
+      } }
+    ],
+
+    /* ---------------- 여관 ---------------- */
+    inn: [
+      { id:'i_martha', run:function(){
+        showChoiceEncounter({
+          title:'마사의 여관', place:LOC.inn.place, art:'npc-martha',
+          text:'여관은 마을에서 유일하게 불이 켜진 건물입니다. 문을 열자 종이 울리고, 카운터 뒤의 여자가 고개를 듭니다. 예순쯤 되어 보이고, 손등에 오래된 화상 자국이 있습니다.' + BR +
+               '"방을 찾으시나요."' + BR +
+               '질문이 아니라 확인이었습니다. 마치 당신이 올 것을 알고 있었던 사람처럼.',
+          choices:[
+            { label:'숙박부를 보여 달라고 한다', onPick:function(){
+                applyEffect({ clue:'register', flag:'metMartha' });
+                return { text:'그녀는 망설임 없이 숙박부를 돌려줍니다. 엘든 카터, 9월 19일 투숙. 퇴실란은 비어 있습니다.' + BR +
+                              '"짐도 아직 위에 있어요." 마사가 말합니다. "치우지 않았어요. 돌아올 수도 있으니까."' + BR +
+                              '그 말투에는 기대가 없었습니다.', next:afterScene };
+            } },
+            { label:'마을 이야기를 청한다', onPick:function(){
+                applyEffect({ sanity:1, clue:'signal', flag:'metMartha' });
+                return { text:'"달빛 없는 밤마다 등대에 불이 켜져요." 그녀가 목소리를 낮춥니다. "사일러스한테 물어보면 아니라고 하겠지만."' + BR +
+                              '계단을 오르다 돌아보았을 때, 그녀는 여전히 그 자리에 서서 당신을 보고 있었습니다. 눈이 마주쳤는데도 시선을 거두지 않았습니다.', next:afterScene };
+            } }
+          ]
+        });
+      } },
+      { id:'i_room', when:function(){ return state.seen['i_martha']; }, run:function(){
+        showDiceEncounter({
+          title:'카터의 방', place:LOC.inn.place,
+          text:'마사가 내준 열쇠로 그의 방문을 엽니다. 짐은 풀린 채 그대로입니다. 침대는 쓴 흔적이 없습니다.',
+          target:7, mods:obsMods(),
+          onSuccess:function(){
+            applyEffect({ clue:'journal', item:'match' });
+            return { text:'여행 가방 안감이 한쪽만 부풀어 있습니다. 뜯어 보니 수첩 한 권이 나옵니다. 머리맡에서 성냥갑도 챙깁니다.', next:afterScene,
+                     doc:['엘든 카터의 수첩', '9월 3일 — 그저 오래된 미신이라 생각했다.\n9월 11일 — 그들의 말이 자꾸 맞아떨어진다.\n9월 19일 — 더는 예전으로 돌아갈 수 없을 것 같다. 그래도 상관없다.'] };
+          },
+          onFail:function(){
+            applyEffect({ sanity:-1 });
+            return { text:'짐을 뒤져도 옷가지와 필기구뿐입니다. 문가에 서 있던 마사가 조용히 말합니다. "그이는 가져갈 건 다 가져갔어요."', next:afterScene };
+          }
+        });
+      } },
+      { id:'i_confront', when:function(){ return !!state.flags.suspectMartha; }, run:function(){
+        showChoiceEncounter({
+          title:'마사와 마주 앉다', place:LOC.inn.place, art:'npc-martha',
+          text:'그을린 편지를 탁자 위에 올려놓자, 그녀는 놀라지 않습니다. 오래 기다려온 사람처럼 천천히 앉을 뿐입니다.' + BR +
+               '"백 년이 넘었어요. 그것은 잠들어 있는 대신 값을 받습니다. 한 사람씩. 제때 바치지 않으면 마을 전체를 가져가죠."' + BR +
+               '"메리도, 톰도 내가 불렀어요. 그 아이들이 아니었다면 여기 사람 하나 안 남았을 겁니다."',
+          choices:[
+            { label:'"메리는 누구였습니까?"', note:'묻는다', onPick:function(){
+                applyEffect({ clue:'pact', flag:'marthaMercyMary' });
+                logLine('마사에게 메리를 먼저 물었다.');
+                return { text:'그녀의 손이 탁자 위에서 멈춥니다.' + BR +
+                              '"고모예요." 마사가 말합니다. "내가 태어나기도 전에. 그 애 이름을 내내 들으며 자랐습니다. 열한 살이었어요."' + BR +
+                              '"우리 집안이 시작한 일인데, 우리 집안 아이가 첫 번째였습니다. 그게 무슨 뜻인지 나는 평생 생각했어요."', next:afterScene };
+            } },
+            { label:'"그럼 나도 명단에 올린 거군."', note:'몰아세운다', onPick:function(){
+                applyEffect({ sanity:-2, clue:'pact', flag:'marthaDefied' });
+                logLine('마사를 몰아세웠다.');
+                return { text:'"미안해요." 그녀는 부정하지 않습니다. ' + state.char.called + BR +
+                              '그러고는 입을 다뭅니다. 그날 이후 그녀는 당신과 눈을 마주치지 않습니다.', next:afterScene };
+            } },
+            { label:'"이걸 끝낼 방법을 아시오?"', onPick:function(){
+                applyEffect({ clue:'pact', item:'key', flag:'marthaHelped' });
+                logLine('마사가 관리자의 열쇠를 건넸다.');
+                return { text:'"바치는 걸로는 끝나지 않아요. 다시 재우는 수밖에." 그녀가 낡은 열쇠 하나를 밀어놓습니다.' + BR +
+                              '"제단 아래, 첫 번째 관리자가 남긴 것이 있어요. 나는 겁이 나서 백 년 동안 못 했던 일입니다."', next:afterScene };
+            } }
+          ]
+        });
+      } },
+      { id:'i_truth', when:function(){ return hasClue('blood') && state.seen['i_confront'] && !state.flags.marthaFled; }, run:function(){
+        showChoiceEncounter({
+          title:'일라이어스의 기록을 내려놓다', place:LOC.inn.place, art:'npc-martha',
+          text:'방수포에 싸여 있던 기록을 탁자에 펼칩니다. 그녀는 첫 줄을 읽고 나서 더 읽지 않았습니다. 이미 아는 사람의 반응이었습니다.' + BR +
+               '"…짐작은 했어요." 마사가 말합니다. "제물이 소용없다는 건. 길먼 쪽이 먼저 알아냈고, 그래서 갈라섰으니까."' + BR +
+               '"하지만 그다음 줄은 몰랐습니다. 계약을 맺은 피라는 것은."' + BR +
+               '그녀가 자기 손등의 화상 자국을 내려다봅니다.',
+          choices:[
+            { label:'"당신 차례라는 뜻입니다."', note:'사실을 말한다', onPick:function(){
+                applyEffect({ flag:'marthaToldTruth', sanity:-1 });
+                logLine('마사에게 자격의 진실을 전했다.');
+                return { text:'"알아요." 그녀는 아주 오래 아무 말도 하지 않습니다.' + BR +
+                              '"백 년 동안 관리자들이 다 알았을 거예요. 알고도 남의 아이를 보냈겠죠. 나처럼."', next:afterScene };
+            } },
+            { label:'"그래도 당신이 정할 일입니다."', note:'사실을 말하되 몰아세우지 않는다', onPick:function(){
+                applyEffect({ flag:'marthaToldTruth', flag2:true, sanity:1 });
+                state.flags.marthaMercyLine = true;
+                logLine('마사에게 선택을 남겨 주었다.');
+                return { text:'그녀가 처음으로 당신을 똑바로 봅니다.' + BR +
+                              '"…아무도 그렇게 말해준 적이 없어요." 마사가 말합니다. "다들 내가 해야 한다고만 했지."' + BR +
+                              '그녀는 명단을 덮습니다. 덮는 손이 떨리지 않았습니다.', next:afterScene };
+            } }
+          ]
+        });
+      } },
+      { id:'i_last', when:function(){ return state.day >= 10 && state.seen['i_confront'] && !state.flags.marthaFled; }, run:function(){
+        showChoiceEncounter({
+          title:'마지막 손님', place:LOC.inn.place, art:'npc-martha',
+          text:'여관에는 이제 불이 하나만 켜져 있습니다. 마사가 명단을 꺼내 마지막 빈 줄을 손끝으로 짚고 있습니다.' + BR +
+               '"그믐밤엔 누구든 한 사람 이름이 들어가야 해요. 비어 있으면 마을을 통째로 가져갑니다."',
+          choices:[
+            { label:'"그 줄은 비워 두시오."', note:'연민', onPick:function(){
+                applyEffect({ flag:'marthaMercyLine', sanity:1 });
+                logLine('마지막 줄을 비워 두라고 했다.');
+                return { text:'그녀가 펜을 내려놓습니다. "…백 년 만에 처음이네요, 그런 말을 하는 사람은."' + BR +
+                              '그러고는 아주 오래 웃지 않던 사람처럼 웃습니다.', next:afterScene };
+            } },
+            { label:'"당신 이름을 적으시오."', note:'요구', weighty:true, onPick:function(){
+                applyEffect({ flag:'marthaPushed', sanity:-1 });
+                logLine('마사에게 그녀의 이름을 적으라 했다.');
+                return { text:'그녀는 한참 말이 없다가 펜을 듭니다. 그러다 내려놓습니다.' + BR +
+                              '"당신도 결국 남을 보내는군요." 마사가 조용히 말합니다. "다들 그래요. 읽고도 못 하니까, 남한테 시키는 거예요."', next:afterScene };
+            } },
+            { label:'"내 이름을 적으시오."', note:'스스로', weighty:true, onPick:function(){
+                applyEffect({ flag:'selfOffered', sanity:-2 });
+                logLine('명단에 스스로의 이름을 올렸다.');
+                return { text:'마사의 손이 멈춥니다. "…정말요?"' + BR +
+                              '그녀가 당신의 이름을 적습니다. 글씨가 흔들립니다. 백 년 동안 한 번도 흔들린 적 없던 글씨입니다.', next:afterScene };
+            } }
+          ]
+        });
+      } },
+      { id:'i_flight', when:function(){ return state.day >= 11 && state.flags.marthaDefied && !state.flags.marthaToldTruth; }, run:function(){
+        showNarrativeBeat('빈 카운터',
+          '여관 문이 열려 있습니다. 카운터에 열쇠가 줄줄이 걸린 채로, 사람만 없습니다.' + BR +
+          '장부도, 명단도 없습니다. 난로에 종이 탄 재만 수북합니다.' + BR +
+          '마사 휘트필드는 떠났습니다. 백 년 만에 처음으로, 관리자가 도망친 것입니다.',
+          function(){ state.flags.marthaFled = true; logLine('마사가 마을을 떠났다.'); afterScene(); });
+      } },
+      { id:'i_sleep', repeat:true, quiet:true, when:function(){
+          if(!isNight()) return false;
+          if(state.flags.suspectMartha && !state.seen['i_confront']) return false;
+          if(hasClue('blood') && state.seen['i_confront'] && !state.seen['i_truth'] && !state.flags.marthaFled) return false;
+          if(state.day >= 10 && state.seen['i_confront'] && !state.seen['i_last'] && !state.flags.marthaFled) return false;
+          return true;
+        }, run:function(){
+        showChoiceEncounter({
+          title:'여관에서 묵다', place:LOC.inn.place,
+          text:'복도의 등이 하나씩 꺼집니다. 오늘 밤은 지붕 아래에서 보낼 수 있습니다.',
+          choices:[
+            { label:'푹 잔다', note:'체력 +4 · 정신력 +4 · 주시 -1', onPick:function(){
+                applyEffect({ health:4, sanity:4, watch:-1, flag:'restedTonight' });
+                return { text:'오랜만에 침대에서 눈을 감습니다.' + BR + pickDream(), next:afterScene };
+            } },
+            { label:'자는 척하고 마사를 지켜본다', note:'정신력 -1', when:function(){ return !state.flags.marthaFled; }, onPick:function(){
+                applyEffect({ sanity:-1, flag:'restedTonight' });
+                if(!hasClue('letter') && hasClue('ledger')){
+                  applyEffect({ clue:'letter' });
+                  return { text:'새벽 두 시, 마사가 카운터에 앉아 무언가를 씁니다. 다 쓴 종이를 난로에 넣으려다, 마음을 바꿔 장부 사이에 끼워 넣습니다.' + BR +
+                                '그녀가 잠든 뒤 확인한 그 종이에는, 당신을 이 마을로 부른 문장이 적혀 있었습니다.', next:afterScene };
+                }
+                applyEffect({ clue:'register' });
+                return { text:'새벽 두 시, 마사가 카운터의 등을 켜고 한참을 앉아 있습니다. 아무것도 하지 않고, 그저 창밖 등대 쪽을 봅니다. 불이 한 번 깜빡이자 그제야 등을 끕니다.', next:afterScene };
+            } }
+          ]
+        });
+      } }
+    ],
+
+    /* ---------------- 저택 ---------------- */
+    manor: [
+      { id:'m_ledger', run:function(){
+        showChoiceEncounter({
+          title:'휘트필드 저택', place:LOC.manor.place,
+          text:'폭풍에 반쯤 무너진 저택. 깨진 창 안으로 희미한 촛불이 보입니다. 아무도 살지 않는다고 했는데, 초는 최근에 갈아 끼운 것입니다.',
+          choices:[
+            { label:'다락까지 올라간다', onPick:function(){
+                applyEffect({ health:-1, clue:'ledger' });
+                return { text:'다락 궤짝에서 가죽 표지의 장부를 발견합니다. 표지에 휘트필드라는 성이 눌러 찍혀 있습니다.', next:afterScene,
+                         doc:['휘트필드 가 장부 · 마지막 장',
+                              '메리 휘트필드 · 1847   (붉은 줄)\n토머스 개럿 · 1889   (붉은 줄)\n… 스물세 개의 이름 …\n엘든 카터 · 1927   (잉크가 아직 마르지 않음)\n\n다음 줄은 비어 있습니다.'] };
+            } },
+            { label:'촛불을 켠 사람을 먼저 찾는다', onPick:function(){
+                applyEffect({ watch:1 });
+                return { text:'발소리를 죽이고 방을 하나씩 확인합니다. 아무도 없습니다. 다만 부엌 쪽 문이 안에서 잠겨 있고, 문 아래로 바닷물 냄새가 새어 나옵니다.' + BR +
+                              '돌아 나오는 길, 촛불은 꺼져 있습니다.', next:afterScene };
+            } }
+          ]
+        });
+      } },
+      { id:'m_secret', when:function(){ return state.seen['m_ledger']; }, run:function(){
+        var sid = state.char.secret;
+        showChoiceEncounter({
+          title:'당신만 알아볼 수 있는 것', place:LOC.manor.place,
+          text:'장부를 덮으려다 멈춥니다. 스물세 개의 이름 중 하나에서, 손이 저절로 멎었습니다.' + BR +
+               '당신 말고는 아무도 알아보지 못할 것입니다.',
+          choices:[
+            { label:'끝까지 읽는다', weighty:true, onPick:function(){
+                applyEffect({ clue:sid, sanity:-2, sanityMax:-1 });
+                logLine('장부에서 자기 몫의 이름을 찾았다.');
+                return { text:CLUES[sid].text + BR +
+                              '이 마을에 온 이유를 이제 다시 적어야 합니다. (정신력 최대치 −1)', next:afterScene };
+            } },
+            { label:'덮는다', onPick:function(){
+                applyEffect({ sanity:-1 });
+                return { text:'장부를 덮습니다. 덮어도 이미 본 것은 본 것입니다. 다만 아직 소리 내어 읽지는 않았습니다.', next:afterScene };
+            } }
+          ]
+        });
+      } },
+      { id:'m_letter', when:function(){ return state.seen['m_ledger'] && hasClue('register'); }, run:function(){
+        showChoiceEncounter({
+          title:'그을린 종이', place:LOC.manor.place,
+          text:'장부 아래, 반쯤 타다 만 종이 한 장이 끼워져 있습니다. 그을린 가장자리 너머로 낯익은 문장이 보입니다.' + BR +
+               '"그들이 다시 눈을 뜨려 한다."' + BR +
+               '당신을 이곳으로 부른 편지의 바로 그 문장입니다. 그런데 이 필체는 엘든의 것이 아닙니다.',
+          choices:[
+            { label:'조용히 챙긴다', onPick:function(){
+                applyEffect({ clue:'letter', sanity:-2 });
+                return { text:'어디서 본 글씨인지 곧 떠오릅니다. 여관 장부의 둥근 글씨체입니다.' + BR +
+                              '처음부터 초대받았던 것입니다. 엘든이 아니라, 마사가 당신을 이곳으로 불러들였습니다.', next:afterScene };
+            } }
+          ]
+        });
+      } },
+      { id:'m_portrait', when:function(){ return state.seen['m_ledger'] && state.day >= 4; }, run:function(){
+        showDiceEncounter({
+          title:'초상화의 뒷면', place:LOC.manor.place,
+          text:'계단참에 걸린 초상화. 1827년, 일라이어스 휘트필드. 액자가 벽에서 조금 떠 있습니다.',
+          target:7, mods:obsMods(),
+          onSuccess:function(){
+            applyEffect({ sanity:-1, flag:'knowElias' });
+            return { text:'액자 뒷면에 접힌 종이가 붙어 있습니다. 서약서의 앞부분입니다. 뒷장은 찢겨 나갔습니다.', next:afterScene,
+                     doc:['일라이어스 휘트필드의 서약 · 앞장',
+                          '…값을 치르는 동안 그것은 잠들어 있을 것이다.\n값을 치르지 못하는 날이 오거든, 제단 아래 내가 묻어 둔 것을 꺼내라.\n\n그 아래에 적힌 것을 읽고도 네가 할 수 있을지는, 나는 모르겠다.'] };
+          },
+          onFail:function(){
+            applyEffect({ health:-2 });
+            return { text:'액자를 당기는 순간 썩은 계단참이 무너집니다. 먼지 속에서 기어 나오며, 다음엔 밝을 때 오자고 생각합니다.', next:afterScene };
+          }
+        });
+      } },
+      { id:'m_cellar', when:function(){ return state.day >= 6 && state.seen['m_ledger']; }, run:function(){
+        startChase(afterScene, {
+          foe:PURSUERS.thing, title:'저택 지하', place:LOC.manor.place,
+          text:'부엌 아래로 이어진 계단에서 바닷물 냄새가 올라옵니다. 저택은 바다와 붙어 있지 않은데도 그렇습니다.' + BR +
+               '계단 중간에서, 무언가가 이미 올라오고 있습니다.',
+          onEscape:function(){ if(gainClue('bones')) return '도망치며 스친 벽감마다 관이 놓여 있었습니다. 절반이 비어 있었고, 비어 있는 것들이 더 깨끗했습니다.'; }
+        });
+      } }
+    ],
+
+    /* ---------------- 마른 우물 ---------------- */
+    well: [
+      { id:'we_first', run:function(){
+        showDiceEncounter({
+          title:'마른 우물', place:LOC.well.place,
+          text:'저택 뒤 풀밭에 돌 우물이 있습니다. 두레박줄은 끊어진 지 오래고, 들여다보면 바닥이 보입니다. 물은 없습니다.' + BR +
+               '없는데, 바닥이 젖어 있습니다.',
+          target:6, mods:obsMods(), extra:[{ label:'불빛', value:hasItem('match') ? 1 : 0 }],
+          onSuccess:function(){
+            applyEffect({ clue:'wellcolor', sanity:-2 });
+            return { text:'성냥을 그어 아래로 비춥니다. 젖은 자리가 어떤 각도에서 빛깔을 띱니다.' + BR +
+                          '초록도 보라도 아닙니다. 본 적 없는 빛깔이고, 이름을 붙일 수가 없습니다. 오래 보고 있으면 눈이 아픕니다.' + BR +
+                          '성냥이 꺼지자 그 빛깔이 한 박자 늦게 사라졌습니다.', next:afterScene };
+          },
+          onFail:function(){
+            applyEffect({ sanity:-1 });
+            return { text:'너무 어둡습니다. 아무것도 보이지 않는데, 들여다본 시간만큼 뒤통수가 서늘합니다.' + BR +
+                          '밝을 때, 아니면 불을 가지고 다시 와야겠습니다.', next:afterScene };
+          }
+        });
+      } },
+      { id:'we_flower', when:function(){ return hasClue('wellcolor'); }, run:function(){
+        showChoiceEncounter({
+          title:'우물 바닥', place:LOC.well.place,
+          text:'끊어진 두레박줄 대신 담쟁이를 붙잡고 내려갑니다. 생각보다 얕습니다. 어른 키의 두 배쯤.' + BR +
+               '바닥에 마른 꽃이 깔려 있습니다. 한 겹이 아닙니다. 아래로 파 보면 계속 나옵니다. 몇 십 년 치입니다.' + BR +
+               '누군가 아주 오래, 빠짐없이 갈아 왔습니다.',
+          choices:[
+            { label:'꽃을 한 송이 챙긴다', onPick:function(){
+                applyEffect({ item:'flower', clue:'marydrown', sanity:-1 });
+                logLine('우물에서 마른 꽃을 가져왔다.');
+                return { text:'가장 위의 것을 한 송이 집어 주머니에 넣습니다. 바스라질 줄 알았는데, 생각보다 단단합니다.' + BR +
+                              '올라오는 내내, 누가 위에서 내려다보고 있는 것 같았습니다. 올라와 보니 아무도 없었습니다.', next:afterScene };
+            } },
+            { label:'세어 보고 그냥 올라온다', onPick:function(){
+                applyEffect({ clue:'marydrown', sanity:-2 });
+                return { text:'겹을 세다가 그만둡니다. 세는 일 자체가 견디기 어려워졌습니다.' + BR +
+                              '1847년, 열한 살짜리를 여기서 내려보냈습니다. 그리고 그 뒤로 누군가 꽃을 갈아 왔습니다.', next:afterScene };
+            } }
+          ]
+        });
+      } },
+      { id:'we_night', when:function(){ return isNight() && hasClue('marydrown'); }, run:function(){
+        showNarrativeBeat('우물가의 밤',
+          '밤의 우물가는 고요합니다. 풀벌레 소리도 없습니다.' + BR +
+          '우물 안쪽에서 아주 희미하게, 아이가 숨을 참았다 쉬는 것 같은 소리가 규칙적으로 올라옵니다.' + BR +
+          '들여다볼 수도 있습니다. 그러지 않을 수도 있습니다. 어느 쪽이든 그 소리는 내일도 거기 있을 것입니다.',
+          function(){ applyEffect({ sanity:-1 }); afterScene(); }, { place:LOC.well.place });
+      } }
+    ],
+
+    /* ---------------- 등대 ---------------- */
+    lighthouse: [
+      { id:'l_silas', run:function(){
+        showChoiceEncounter({
+          title:'등대지기 사일러스', place:LOC.lighthouse.place, art:'npc-silas',
+          text:'사일러스가 문 앞에서 당신을 막습니다. 목에 건 목걸이가 옷깃 밖으로 삐져나와 있는데, 돌에 새겨진 문양이 낯섭니다. 물고기 같기도 하고, 눈 같기도 합니다.',
+          choices:[
+            { label:'카터 교수에 대해 캐묻는다', onPick:function(){
+                showDiceEncounter({
+                  title:'등대지기 사일러스', place:LOC.lighthouse.place,
+                  text:'그의 눈을 똑바로 보며 다그칩니다.',
+                  target:7, mods:obsMods(),
+                  onSuccess:function(){
+                    applyEffect({ clue:'signal', watch:1 });
+                    return { text:'그의 얼굴에서 핏기가 가십니다.' + BR +
+                                  '"교단이… 그를 데려갔소."' + BR +
+                                  '그 말만 남기고 문을 닫습니다. 안에서 빗장 거는 소리가 세 번 났습니다.', next:afterScene };
+                  },
+                  onFail:function(){
+                    var loss = rollSmall(3);
+                    applyEffect({ sanity:-loss, watch:1 });
+                    return { text:'그는 완강히 입을 다물고 문을 닫아버립니다. (정신력 −'+loss+')', next:afterScene };
+                  }
+                });
+                return null;
+            } },
+            { label:'시선을 피해 등대 안으로 숨어든다', onPick:function(){
+                applyEffect({ health:-1, item:'match', flag:'foundPassage' });
+                return { text:'가파른 계단에서 발을 헛디딜 뻔합니다. 창고에서 낡은 성냥갑을 챙기다가, 바닥에 난 철문을 발견합니다. 해안 동굴 쪽으로 내려가는 통로입니다.', next:afterScene };
+            } }
+          ]
+        });
+      } },
+      { id:'l_lens', when:function(){ return state.seen['l_silas']; }, run:function(){
+        showDiceEncounter({
+          title:'등명기 앞에서', place:LOC.lighthouse.place,
+          text:'등대 꼭대기. 거대한 렌즈가 천천히 돕니다. 렌즈를 받치는 틀에 누군가 손댄 흔적이 있습니다.',
+          target:7, mods:obsMods(),
+          onSuccess:function(){
+            applyEffect({ clue:'signal', sanity:-1 });
+            if(hasItem('gun')) state.ammo += 2;
+            return { text:'각도 조절 나사가 아래로 꺾여 고정되어 있습니다. 이 각도로는 바다가 아니라 육지를 비춥니다.' + BR +
+                          '누군가 일부러, 그리고 꽤 오래전에 이렇게 만들어 놓았습니다.' + (hasItem('gun') ? ' 공구함에서 탄약 두 발도 나옵니다.' : ''), next:afterScene };
+          },
+          onFail:function(){
+            applyEffect({ health:-1, watch:1 });
+            return { text:'렌즈 틀을 만지다 손을 벱니다. 아래층에서 사일러스가 올라오는 소리가 들려 서둘러 내려옵니다.', next:afterScene };
+          }
+        });
+      } },
+      { id:'l_confess', when:function(){ return state.day <= 8 && hasClue('signal') && state.seen['l_lens']; }, run:function(){
+        showChoiceEncounter({
+          title:'사일러스의 고백', place:LOC.lighthouse.place, art:'npc-silas',
+          text:'문을 두드리자, 이번에는 그가 순순히 엽니다. 술 냄새가 납니다. 목걸이는 탁자 위에 놓여 있습니다.' + BR +
+               '"알고 온 거 아니오." 그가 말합니다. "불을 켜는 건 나요."',
+          choices:[
+            { label:'"왜 켭니까?"', onPick:function(){
+                applyEffect({ clue:'silas', sanity:-1 });
+                logLine('사일러스가 등대의 불에 대해 털어놓았다.');
+                return { text:'"안 켜면 등대를 무너뜨린다고 했으니까." 그가 잔을 비웁니다. "그것들도 아무 때나 오는 게 아니오. 그믐밤, 물이 가장 많이 빠지는 그 한 시간. 그때뿐이오."' + BR +
+                              '"백 년에 한 번은 더 크게 오지만. 올해가 그 해요."', next:afterScene };
+            } },
+            { label:'"그믐밤에는 켜지 마시오."', onPick:function(){
+                applyEffect({ clue:'silas', flag:'silasPromise', sanity:1 });
+                logLine('사일러스가 그믐밤에 불을 켜지 않기로 했다.');
+                return { text:'그가 오래 당신을 봅니다. "…그러면 나는 죽소."' + BR +
+                              '잠시 후, 그가 고개를 끄덕입니다. "그래도 켜지 않으리다. 대신 그 밤엔 여기 오지 마쇼. 무너질 테니까."' + BR +
+                              '그의 말투에는 두려움보다 후련함이 있었습니다.', next:afterScene };
+            } }
+          ]
+        });
+      } },
+      { id:'l_dead', when:function(){ return state.day >= 9 && !state.seen['l_confess']; }, run:function(){
+        showChoiceEncounter({
+          title:'꺼지지 않는 불', place:LOC.lighthouse.place, art:'npc-silas',
+          text:'등대 문이 열려 있습니다. 사일러스는 등명기 앞에 앉은 채로, 렌즈를 마주 보고 있습니다. 며칠 되었습니다.' + BR +
+               '그의 손에는 아직 성냥이 쥐여 있습니다.',
+          choices:[
+            { label:'그의 물건을 살핀다', onPick:function(){
+                applyEffect({ sanity:-2, clue:'silas' });
+                logLine('사일러스는 이미 늦었다.');
+                return { text:'탁자에 적다 만 쪽지가 있습니다.', next:afterScene,
+                         doc:['사일러스의 쪽지', '그믐밤, 물이 가장 많이 빠지는 한 시간. 그때뿐이다.\n나는 그때까지 못 버티겠다.\n\n불은 켜두고 간다. 안 켜면 저들이 등대를 무너뜨릴 테니.'] };
+            } }
+          ]
+        });
+      } }
+    ],
+
+    /* ---------------- 해안 동굴 ---------------- */
+    cave: [
+      { id:'v_ritual', when:function(){ return !hasItem('page'); }, run:function(){
+        showChoiceEncounter({
+          title:'해안 동굴', place:LOC.cave.place,
+          text:(state.flags.foundPassage
+            ? '등대 지하 통로를 통해 은밀히 접근합니다. 흔들리는 횃불 사이로 두건을 쓴 사람들이 보입니다.'
+            : '파도 소리에 사람의 목소리가 섞여 있습니다. 절벽을 따라 내려가자 동굴 입구가 나오고, 안쪽에서 횃불 빛이 흔들립니다.') + BR +
+            '두건을 쓴 사람들이 원을 그리고 서 있습니다. 스무 명 남짓. 그중 몇은 낮에 광장에서 본 얼굴입니다.' + BR +
+            '바닥에 종이 한 장이 떨어져 있습니다. 급히 넘기다 찢어진 듯, 가장자리가 불규칙합니다.',
+          choices:[
+            { label:'끝까지 지켜본 뒤 종이를 줍는다', note:'정신력 -2 · 저들이 무엇을 외는지 알게 된다', onPick:function(){
+                applyEffect({ sanity:-2, clue:['ritual','phrase'], item:'page' });
+                return { text:'그들이 낮은 목소리로 같은 구절을 반복합니다. "잠든 것은 죽은 것이 아니며, 깨어남은 끝이 아니라 시작이니."' + BR +
+                              '외우고 나서야 물러나 종이를 집습니다. 손에 닿은 종이가 축축합니다.' + BR +
+                              '거기 적힌 글자는 어느 언어도 아니었지만, 이상하게도 읽을 수 있었습니다. 읽는 순간 입 안에서 쇠 맛이 났습니다.', next:afterScene,
+                         doc:['찢겨나간 페이지', '느가 프타른 이아 크나아'] };
+            } },
+            { label:'종이만 집고 곧바로 물러난다', note:'주시 +1 · 성가는 못 듣는다', onPick:function(){
+                applyEffect({ sanity:-1, clue:'phrase', item:'page', watch:1 });
+                return { text:'손을 뻗어 종이를 끌어당깁니다. 자갈이 작게 무너지고, 횃불 하나가 이쪽으로 돌아섭니다.' + BR +
+                              '뒤도 안 돌아보고 절벽을 기어오릅니다. 종이는 손에 있습니다. 저들이 무엇을 외고 있었는지는 끝내 듣지 못했습니다.', next:afterScene,
+                         doc:['찢겨나간 페이지', '느가 프타른 이아 크나아'] };
+            } }
+          ]
+        });
+      } },
+      { id:'v_deep', repeat:true, when:function(){ return hasClue('ritual') && !hasClue('marks') && state.day >= 5; }, run:function(){
+        showDiceEncounter({
+          title:'물이 빠진 굴', place:LOC.cave.place,
+          text:'물때가 맞아 동굴 안쪽이 드러났습니다. 사람 손으로 다듬은 통로가 숲 쪽으로 이어집니다.',
+          target:6, mods:obsMods(),
+          extra:[{ label:'불빛', value:hasItem('match') ? 1 : 0 }].concat(retryMod('v_deep')),
+          onSuccess:function(){
+            applyEffect({ clue:'marks', sanity:-1 });
+            return { text:'통로 끝은 숲 한가운데로 이어집니다. 나오는 길목의 나무마다 같은 표식이 새겨져 있습니다.' + BR +
+                          '표식을 따라가면 안개 속에서도 제단까지 갈 수 있습니다.' + BR + '— 제단으로 가는 길이 열렸습니다.', next:afterScene };
+          },
+          onFail:function(){
+            applyEffect({ health:-1, sanity:-1 });
+            noteFail('v_deep');
+            return { text:'물이 다시 차오르기 시작합니다. 허리까지 잠긴 채 되돌아 나오는 동안, 발목을 스치는 것이 몇 번이나 있었습니다.', next:afterScene };
+          }
+        });
+      } },
+      { id:'v_gilman', when:function(){ return state.day >= 8 && hasClue('ritual'); }, run:function(){
+        showNarrativeBeat('리허설',
+          '오늘 밤의 동굴은 사람이 훨씬 많습니다. 두건을 쓰지 않은 사람도 섞여 있습니다. 구경하러 온 것이 아니라, 배우러 온 얼굴들입니다.' + BR +
+          '맨 앞에서 길먼이 구절을 선창합니다. 틀리는 사람이 있으면 다시 시킵니다.' + BR +
+          '그믐밤을 위한 연습입니다. 그들은 준비가 끝나가고 있습니다.',
+          function(){ applyEffect({ sanity:-1, clue:'procession' }); afterScene(); }, { place:LOC.cave.place });
+      } }
+    ],
+
+    /* ---------------- 예배당 ---------------- */
+    chapel: [
+      { id:'c_journal', run:function(){
+        showChoiceEncounter({
+          title:'낡은 예배당', place:LOC.chapel.place,
+          text:'마을 외곽, 오래전 버려졌다던 예배당에 불빛이 새어 나옵니다. 안에서 낮은 대화 소리와 종이 넘기는 소리가 들립니다.',
+          choices:[
+            { label:'뒤쪽으로 숨어든다', onPick:function(){
+                applyEffect({ health:-1, item:'cross', clue:'journal' });
+                return { text:'제단 뒤에서 낯익은 수첩을 발견합니다. 카터의 것입니다. 갈피에서 은제 십자가 하나가 떨어집니다.', next:afterScene,
+                         doc:['엘든 카터의 수첩', '9월 3일 — 그저 오래된 미신이라 생각했다.\n9월 11일 — 그들의 말이 자꾸 맞아떨어진다.\n9월 19일 — 더는 예전으로 돌아갈 수 없을 것 같다. 그래도 상관없다.'] };
+            } },
+            { label:'정면으로 걸어 들어가 신도인 척한다', onPick:function(){
+                if(Math.random() < 0.5){
+                  applyEffect({ clue:'ritual' });
+                  return { text:'한 신도가 아무 의심 없이 자리를 내줍니다. 낮게 반복되는 구절을 외울 때까지 듣고 나옵니다.', next:afterScene };
+                }
+                var loss = rollSmall(4) + 1;
+                applyEffect({ sanity:-loss, watch:2 });
+                return { text:'말투에서 위화감을 느낀 신도들이 일어섭니다. (정신력 −'+loss+')', next:function(){
+                  startChase(afterScene, { foe:PURSUERS.cult, title:'예배당', place:LOC.chapel.place });
+                } };
+            } }
+          ]
+        });
+      } },
+      { id:'c_pulpit', when:function(){ return state.seen['c_journal'] && !hasItem('page'); }, run:function(){
+        showChoiceEncounter({
+          title:'설교단의 잠긴 서랍', place:LOC.chapel.place,
+          text:'설교단 아래 서랍이 잠겨 있습니다. 나무가 낡아 어떻게든 열 수는 있을 것 같습니다.' + BR +
+               '안에서 종이 냄새가 납니다. 오래되고 축축한, 동굴에서 맡았던 것과 같은 냄새입니다.',
+          choices:[
+            { label:'경첩째 부순다', note:'소리가 크다 · 주시 +2', onPick:function(){
+                applyEffect({ item:'page', clue:'phrase', watch:2, sanity:-1 });
+                return { text:'나무가 갈라지는 소리가 예배당 전체에 울립니다. 서랍 안에 의식서에서 찢겨나간 페이지 한 장이 들어 있습니다.' + BR +
+                              '집어 드는 순간 종이가 축축합니다. 읽는 순간 입 안에서 쇠 맛이 납니다.', next:afterScene,
+                         doc:['찢겨나간 페이지', '느가 프타른 이아 크나아'] };
+            } },
+            { label:'철사를 구부려 조용히 따낸다', note:'시간이 걸린다 · 체력 -1', onPick:function(){
+                applyEffect({ item:'page', clue:'phrase', health:-1, sanity:-1 });
+                return { text:'손끝이 까질 때까지 매달린 끝에 걸쇠가 물러납니다. 아무도 오지 않았습니다.' + BR +
+                              '서랍 안에 의식서에서 찢겨나간 페이지 한 장. 읽는 순간 입 안에서 쇠 맛이 납니다.', next:afterScene,
+                         doc:['찢겨나간 페이지', '느가 프타른 이아 크나아'] };
+            } }
+          ]
+        });
+      } },
+      { id:'c_ossuary', when:function(){ return state.seen['c_journal'] && state.day >= 4; }, run:function(){
+        showDiceEncounter({
+          title:'예배당 납골당', place:LOC.chapel.place,
+          text:'제단 옆 좁은 계단이 지하로 이어집니다. 벽을 따라 관이 층층이 놓여 있고, 각 관에는 연도가 적혀 있습니다.',
+          target:6, mods:obsMods(), extra:[{ label:'불빛', value:hasItem('match') ? 1 : 0 }],
+          onSuccess:function(){
+            applyEffect({ clue:'bones', sanity:-1 });
+            return { text:'연도를 따라가며 관을 세어 봅니다. 1827년, 1927년. 그 두 해 근처에서만 관이 비어 있습니다.' + BR +
+                          '비어 있는 관의 수가, 두 번 다 정확히 같습니다. 누군가 백 년째 셈을 맞춰 오고 있습니다.', next:afterScene };
+          },
+          onFail:function(){
+            applyEffect({ sanity:-2 });
+            return { text:'불도 없이 내려간 것이 잘못이었습니다. 어둠 속에서 무언가에 손이 닿았고, 그것은 관 속에 있어야 할 것이 아니었습니다.', next:afterScene };
+          }
+        });
+      } },
+      { id:'c_carter', when:function(){ return !!state.flags.carterFindable; }, run:function(){
+        showChoiceEncounter({
+          title:'재회', place:'예배당 뒷마당 · 다섯째 날 이후', art:'npc-carter',
+          text:'그는 담에 기대 서 있었습니다. 코트는 그대로인데 단추가 하나도 채워져 있지 않고, 안경이 없습니다. 엘든 카터는 안경 없이는 걸음도 못 떼는 사람이었습니다.' + BR +
+               '"드디어… 왔군."' + BR +
+               '목소리는 그대로였습니다. 눈은 아니었습니다.' + BR + state.char.meetCarter,
+          choices:[
+            { label:'함께 나가자고 설득한다', note:'그에게 아직 남은 것이 있다면', onPick:function(){
+                applyEffect({ sanity:-2, flag:'carterMet' });
+                state.flags.carterPersuaded = true;
+                logLine('카터를 설득하려 했다.');
+                return { text:'그가 고개를 젓습니다. "나는 못 가네. 자격이 없어서 못 가는 게 아니라, 이젠 갈 데가 없어서 그래."' + BR +
+                              '"그래도 자네가 그날 밤 부른다면, 나는 들을 걸세."' + BR +
+                              '돌아서는 당신의 등 뒤로 그가 한마디를 덧붙입니다. "내가 부른 게 아니야. 나도… 불려온 거였어."', next:afterScene };
+            } },
+            { label:'무엇을 알아냈는지 묻는다', onPick:function(){
+                applyEffect({ sanity:-1, clue:'carterfate', flag:'carterMet' });
+                logLine('카터에게서 의식의 순서를 들었다.');
+                return { text:'"순서가 중요하네." 그가 말라붙은 목소리로 읊습니다. "물이 가장 많이 빠질 때, 아래 것을 먼저 꺼내고, 그다음에 구절이야."' + BR +
+                              '"그리고 값이 맞아야 하네. 나는 그걸 몰랐어."' + BR + '그러고는 웃습니다. "그래서 이 꼴일세."', next:afterScene };
+            } },
+            { label:'그가 지닌 낡은 권총을 빼앗는다', note:'그의 마지막 소지품', weighty:true, onPick:function(){
+                applyEffect({ item:'gun', sanity:-1, flag:'carterMet' });
+                state.ammo += 3;
+                state.flags.carterGunTaken = true;
+                logLine('카터의 권총을 가져왔다.');
+                return { text:'코트 주머니에서 삐져나온 총을 빼냅니다. 그는 저항하지 않습니다.' + BR +
+                              '"…그건 나한테 필요한 거였는데." 그가 말합니다. 원망은 아니었습니다. 확인에 가까웠습니다.' + BR +
+                              '"뭐, 가져가게. 자네가 가진 게 그거라도 있어야 하니."', next:afterScene };
+            } }
+          ]
+        });
+      } }
+    ],
+
+    /* ---------------- 숲길 ---------------- */
+    forest: [
+      { id:'f_first', run:function(){
+        showChoiceEncounter({
+          title:'안개 낀 숲길', place:LOC.forest.place,
+          text:'안개가 유난히 짙은 숲길. 저 멀리서 낮은 울음소리가 들려옵니다. 짐승의 것은 아닙니다.' + BR +
+               '소리 쪽으로 등불 몇 개가 줄지어 움직입니다. 두건을 쓴 이들입니다.',
+          choices:[
+            { label:'바짝 붙어 뒤쫓는다', note:'정신력 -2 · 길까지 알아낸다', onPick:function(){
+                applyEffect({ sanity:-2, clue:['procession','marks'] });
+                return { text:'숨을 죽이고 행렬 꼬리에 붙습니다. 걸음에 망설임이 없습니다. 저들은 길을 외우고 있습니다.' + BR +
+                              '뒤쫓는 동안 알아챘습니다. 저들은 나무 밑동의 표식을 보고 걷습니다. 같은 모양이 일정한 간격으로 이어집니다.' + BR +
+                              '맨 끝의 한 사람이 뒤를 돌아보았을 때, 당신은 나무 뒤에 있었습니다. 아슬아슬했습니다.' + BR +
+                              '— 제단으로 가는 길이 열렸습니다.', next:afterScene };
+            } },
+            { label:'멀찍이서 지켜보기만 한다', note:'안전하다 · 길은 다음에', onPick:function(){
+                applyEffect({ sanity:-1, clue:'procession' });
+                return { text:'등불이 안개 속으로 사라질 때까지 지켜봅니다. 저들은 같은 방향으로, 망설임 없이 걸어갔습니다.' + BR +
+                              '어떻게 길을 찾는지는 보지 못했습니다. 다음에 저들이 지나간 자리를 되짚어 보면 알 수 있을 것입니다.', next:afterScene };
+            } }
+          ]
+        });
+      } },
+      { id:'f_marks', when:function(){ return hasClue('procession') && !hasClue('marks'); }, run:function(){
+        showChoiceEncounter({
+          title:'나무의 표식', place:LOC.forest.place,
+          text:'행렬이 지나간 자리를 되짚어 봅니다. 나무 밑동마다 같은 모양이 새겨져 있습니다.' +
+               (state.flags.knowElias ? BR + '서약서 끝에 서명 대신 그려져 있던 표식과 같은 것입니다. 길을 낸 사람과 약속을 맺은 사람이 같습니다.' : ''),
+          choices:[
+            { label:'하나씩 세며 끝까지 따라간다', note:'반나절이 더 든다 · 체력 -1', onPick:function(){
+                applyEffect({ clue:'marks', health:-1 });
+                return { text:'표식은 일정한 간격으로 이어집니다. 끝까지 따라가 보고서야 확신이 섭니다. 이제 안개 속에서도 제단에 닿을 수 있습니다.' + BR +
+                              '— 제단으로 가는 길이 열렸습니다.', next:afterScene };
+            } },
+            { label:'행렬이 밟은 자국을 따라간다', note:'빠르다 · 주시 +1', onPick:function(){
+                applyEffect({ clue:'marks', watch:1, sanity:-1 });
+                return { text:'젖은 땅에 눌린 자국을 따라가니 훨씬 빠릅니다. 표식과 자국이 같은 길로 이어집니다.' + BR +
+                              '다만 그들도 같은 자국을 봅니다. 돌아 나오는 길에 새 발자국이 당신 것 위에 겹쳐 있었습니다.' + BR +
+                              '— 제단으로 가는 길이 열렸습니다.', next:afterScene };
+            } }
+          ]
+        });
+      } },
+      { id:'f_cabin', when:function(){ return state.day >= 5; }, run:function(){
+        showChoiceEncounter({
+          title:'사냥꾼의 오두막', place:LOC.forest.place,
+          text:'숲 안쪽에 버려진 오두막이 있습니다. 문은 안쪽에서 잠겨 있었고, 창으로 들여다보니 오래 비어 있던 것 같습니다.',
+          choices:[
+            { label:'문을 부수고 들어간다', note:'체력 -1', onPick:function(){
+                applyEffect({ health:-1 });
+                if(!hasItem('gun')){
+                  addItem('gun'); state.ammo += 4;
+                  return { text:'벽에 걸린 엽총은 녹슬어 못 쓰지만, 침상 아래 상자에 낡은 권총과 탄약 네 발이 있습니다.' + BR +
+                                '주인은 문을 잠근 채 나가지 않았고, 그 뒤로 돌아오지 않았습니다.', next:afterScene };
+                }
+                state.ammo += 3; addItem('bandage');
+                return { text:'침상 아래 상자에서 탄약 세 발과 붕대를 챙깁니다. 주인은 문을 잠근 채 나가지 않았고, 그 뒤로 돌아오지 않았습니다.', next:afterScene };
+            } },
+            { label:'벽에 적힌 것을 읽는다', onPick:function(){
+                applyEffect({ sanity:-1, clue:'procession' });
+                return { text:'안쪽 벽에 못으로 긁어 쓴 글씨가 빼곡합니다. 날짜와 숫자의 반복입니다. 그믐마다 숲을 지나간 사람의 수를 센 것입니다.' + BR +
+                              '마지막 줄의 숫자가 가장 큽니다. 그리고 그 아래에는 "올해는 세지 않겠다"고 적혀 있습니다.', next:afterScene };
+            } }
+          ]
+        });
+      } },
+      { id:'f_hunt', when:function(){ return state.day >= 8 && state.watch >= 3; }, run:function(){
+        startChase(afterScene, {
+          foe:PURSUERS.towns, title:'숲길의 사람들', place:LOC.forest.place,
+          text:'안개 속에서 등불 몇 개가 다가옵니다. 마을에서 본 얼굴들입니다. 그들은 당신의 이름을 부릅니다.' + BR +
+               '대답하지 않는 편이 나을 것 같습니다.'
+        });
+      } }
+    ],
+
+    /* ---------------- 제단 ---------------- */
+    altar: [
+      { id:'a_scout', when:function(){ return !state.flags.foundStone; }, run:function(){
+        showChoiceEncounter({
+          title:'숲속의 오래된 제단', place:LOC.altar.place,
+          text:'표식을 따라가자 나무가 끊기고 공터가 나옵니다. 가운데에 낮은 돌 제단이 있습니다. 아직은 아무도 없습니다.' + BR +
+               '가까이 서자 숨이 막힙니다. 돌에 손을 대면 손바닥으로 무언가의 박동 같은 것이 전해집니다.' + BR +
+               '그래도 바닥을 살펴야 합니다. 백 년 전 사람이 남긴 것이 있다면 여기입니다.',
+          choices:[
+            { label:'무릎을 꿇고 손으로 바닥을 훑는다', note:'오래 걸린다 · 주시 +1', onPick:function(){
+                applyEffect({ flag:'foundStone', watch:1, sanity:-1 });
+                return { text:'한참을 더듬은 끝에 결이 다른 돌 하나를 찾아냅니다. 나중에 끼워 넣은 것이 아니라, 처음부터 꺼낼 수 있게 만들어 둔 것입니다.' + BR +
+                              '공터를 나설 때, 숲 가장자리에서 누군가 지켜보다 돌아서는 기척이 있었습니다.', next:afterScene };
+            } },
+            { label:'성냥을 켜서 결을 비춰 본다', note:'불빛이 멀리 보인다 · 주시 +2', when:function(){ return hasItem('match'); }, onPick:function(){
+                applyEffect({ flag:'foundStone', watch:2 });
+                return { text:'성냥 하나로 충분했습니다. 돌 하나만 결이 가로로 누워 있습니다. 밀면 움직일 것 같습니다.' + BR +
+                              '불빛은 숲 어디까지 갔을지 모릅니다.', next:afterScene };
+            } },
+            { label:'오늘은 물러난다', onPick:function(){
+                applyEffect({ sanity:-1 });
+                return { text:'서늘한 기운에 등을 돌립니다. 제단은 어디 가지 않습니다.', next:afterScene };
+            } }
+          ]
+        });
+      } },
+      { id:'a_chamber', when:function(){ return !!state.flags.foundStone; }, run:function(){
+        showChoiceEncounter({
+          title:'제단 아래 석실', place:LOC.altar.place,
+          text:'돌을 밀어내자 좁은 석실이 나옵니다. 그 안에 방수포로 싼 기록이 있습니다. 백 년 전, 첫 번째 관리자가 남긴 것입니다.' + (hasItem('key') ? BR + '마사가 준 열쇠는 석실 안쪽 쇠고리를 여는 데 쓰였습니다. 그녀가 백 년 동안 열지 못한 고리입니다.' : ''),
+          doc:['일라이어스 휘트필드의 기록 · 1827',
+               '내가 틀렸다는 것을 이제야 적는다. 늦었으나 적어야 한다.\n\n우리는 그것을 재우고 있다고 믿었다. 해마다 한 사람씩 바치면 그것이 다시 잠든다고. 그래서 나는 스물세 해 동안 그렇게 했다.\n\n그러나 그것은 잠든 적이 없다. 우리는 재운 것이 아니라 먹여온 것이다. 해마다 그것은 조금씩 더 커졌다.\n\n참된 봉인은 다르다. 그것은 아무나의 목숨을 받지 않는다. 계약을 맺은 피, 관리자 자신의 것이라야 한다.\n\n나는 그것을 알고도 하지 못했다. 대신 남의 아이를 보냈다.\n\n내 뒤에 오는 자가 이것을 읽는다면, 나보다 낫기를 바란다. 그러나 나는 안다. 읽고도 하지 못할 것이다. 나도 그랬으니까.'],
+          choices:[
+            { label:'끝까지 읽는다', weighty:true, onPick:function(){
+                applyEffect({ clue:'blood', sanity:-3 });
+                logLine('일라이어스의 기록을 읽었다.');
+                return { text:'백 년간의 제물은 아무것도 막지 못했습니다. 시간을 샀을 뿐이고, 그 이자가 지금 청구되고 있는 것입니다.' + BR +
+                              '그리고 엘든이 왜 제 발로 걸어 들어갔는지도 이제 알 수 있습니다. 그는 이 기록을 먼저 읽었던 것입니다.' + BR +
+                              '다만 그는 휘트필드가 아니었습니다. 의식은 성립하지 않았고, 그래서 그는 봉인되지도 죽지도 못한 채 그냥 잡아먹히는 중입니다.' + BR +
+                              '— 핵심 단서 확보: 계약을 맺은 피 (자격)', next:afterScene };
+            } }
+          ]
+        });
+      } },
+      { id:'a_early', repeat:true, quiet:true, when:function(){ return state.day < LAST_DAY; }, run:function(){
+        var lines = ['제단은 비어 있습니다. 낮에는 그저 이끼 낀 돌무더기처럼 보입니다.'];
+        if(ritualReady()){
+          var ready = bearers().filter(function(b){ return b.ready && b.id !== 'self'; });
+          lines.push(ready.length
+            ? '준비는 끝났습니다. 그믐밤에 여기로 오면 됩니다. 그리고 그날 밤, 누가 걸어 들어갈지를 당신이 말해야 합니다.'
+            : '구절도 때도 자격도 압니다. 다만 그 자격을 가진 사람 중 누구도 아직 걸어 들어갈 준비가 되어 있지 않습니다.');
+        }
+        else if(hasClue('blood')) lines.push('무엇이 값인지는 압니다. 아직 언제인지, 혹은 무슨 말을 해야 하는지 모릅니다.');
+        else lines.push('아래에 무언가 있다는 것은 알겠는데, 무엇을 해야 하는지는 아직 모릅니다.');
+        showChoiceEncounter({
+          title:'숲속의 오래된 제단', place:LOC.altar.place,
+          text:lines.join(BR),
+          choices:[
+            { label:'주변을 더 살핀다', onPick:function(){
+                applyEffect({ sanity:-1 });
+                if(hasItem('gun') && state.ammo < 6) state.ammo += 1;
+                return { text:'공터 가장자리를 한 바퀴 돕니다. 나무마다 오래된 흠집이 있습니다. 사람 손이 닿는 높이입니다.', next:afterScene };
+            } },
+            { label:'지금 구절을 외워 본다', when:function(){ return hasItem('page'); }, note:hasClue('timing') ? '때가 아니라는 것을 안다' : '해 봐야 알 것 같다', onPick:function(){
+                if(hasClue('timing')){
+                  applyEffect({ sanity:-1 });
+                  return { text:'첫 음절을 내뱉다 멈춥니다. 오늘은 그믐이 아닙니다. 지금 이 말을 끝까지 하면, 그저 저쪽에 이쪽을 알리는 일이 될 뿐입니다.', next:afterScene };
+                }
+                applyEffect({ sanity:-3, watch:2 });
+                return { text:'구절을 끝까지 외웁니다. 아무 일도 일어나지 않습니다.' + BR +
+                              '아니, 한 가지는 일어났습니다. 숲 저쪽에서 무언가가 이쪽을 향해 방향을 틀었습니다.', next:function(){
+                  startChase(afterScene, { foe:PURSUERS.thing, title:'제단', place:LOC.altar.place });
+                } };
+            } },
+            { label:'물러난다', onPick:function(){ return { text:'등을 돌려 숲길로 내려갑니다.', next:afterScene }; } }
+          ]
+        });
+      } }
+    ]
+  };
+
+  /* =========================================================
+     장소 방문
+     ========================================================= */
+
+  function visitLocation(id){
+    if(!canReach(id)){
+      if(id === 'altar' && ADJ[state.location].indexOf('altar') !== -1){
+        return showNarrativeBeat('길을 찾을 수 없다',
+          '안개가 너무 짙습니다. 숲 안쪽으로 몇 걸음 들어가 보지만, 어느 방향으로 가도 같은 자리로 돌아옵니다.' + BR +
+          '길을 아는 사람들은 무언가를 보고 따라갑니다. 그 표식을 먼저 찾아야 합니다.',
+          renderMap);
+      }
+      return showNarrativeBeat('그쪽으로는 갈 수 없다',
+        LOC[id].name + '은(는) 여기서 바로 갈 수 없습니다. 길로 이어진 곳을 거쳐 가야 합니다.',
+        renderMap);
+    }
+
+    state.location = id;
+    state.steps += 1;
+    routeLocation(id);
+  }
+
+  function routeLocation(id){
+    var list = SCENES[id] || [];
+    for(var i=0;i<list.length;i++){
+      var sc = list[i];
+      if(!sc.repeat && state.seen[sc.id]) continue;
+      if(sc.when && !sc.when()) continue;
+      if(!sc.repeat) state.seen[sc.id] = true;
+      return sc.run();
+    }
+    genericInvestigate(id);
+  }
+
+  /* =========================================================
+     그믐밤 — 남은 질문은 하나뿐이다
+     ========================================================= */
+
+  function finaleIntro(){
+    var t = '해가 지자 바다가 눈에 띄게 물러갑니다. 드러난 갯바닥을 따라 등불이 줄지어 숲 쪽으로 올라갑니다.' + BR;
+    t += state.flags.silasPromise
+      ? '등대는 어둡습니다. 사일러스는 약속을 지켰습니다. 그런데도 행렬은 멈추지 않습니다. 불빛 없이도 그들은 길을 압니다.'
+      : '등대에 불이 켜집니다. 바다가 아니라 육지를 향한 불입니다.';
+    t += BR + '절벽 위에 두건을 쓴 이들이 늘어서 있습니다. 처음 동굴에서 본 것보다 훨씬 많습니다. 그들이 한목소리로 같은 구절을 반복합니다.' + BR +
+         '"잠든 것은 죽은 것이 아니며, 깨어남은 끝이 아니라 시작이니."' + BR +
+         '저 물살 아래, 오랫동안 웅크리고 있던 것이 천천히 눈을 떴습니다. 파도가 거꾸로 밀려나가고, 별들이 잘못된 자리에서 빛나기 시작합니다.';
+    if(state.flags.carterMet){
+      t += BR + '행렬 맨 앞에 엘든이 서 있습니다. 당신을 알아본 그가 한 걸음 옆으로 비켜섭니다.';
+    }
+    return t;
+  }
+
+  function finale(){
+    document.body.classList.add('is-final');
+    state.flags.finaleReached = true;
+
+    var intro = finaleIntro();
+    if(ritualReady()){
+      intro += BR + '손에는 찢겨나간 페이지가 있습니다. 구절도 외웠습니다. 의식을 시작할 수는 있습니다.' + BR +
+        '다만 그것은 값을 요구합니다. 그리고 이제 당신은 그 값이 무엇인지 압니다.' + BR +
+        '남은 질문은 하나입니다. 누가 치를 것인가.';
+    } else if(hasItem('page')){
+      intro += BR + '손에는 찢겨나간 페이지가 있습니다. 구절은 압니다. 다만 그것으로 충분한지는 모릅니다.';
+    } else {
+      intro += BR + '손에 든 것이 없습니다. 무엇을 해야 하는지 끝내 알아내지 못했습니다.';
+    }
+
+    showNarrativeBeat('그믐밤', intro, finaleChoices, { place:'제단 · 마지막 밤', label:'제단으로' });
+  }
+
+  function finaleChoices(){
+    var choices = [];
+
+    if(ritualReady()){
+      if(marthaReady()){
+        choices.push({ label:'마사를 부른다', note:'관리자의 피 · 그녀는 이미 알고 있다', onPick:function(){
+            runBearer('martha');
+            return null;
+        } });
+      }
+      if(maryReady()){
+        choices.push({ label:'메리에게 묻는다', note:'열한 살에는 아무도 묻지 않았다', weighty:true, onPick:function(){
+            askMary();
+            return null;
+        } });
+      }
+      if(carterReady()){
+        choices.push({ label:'엘든의 이름을 부른다', note:'자격은 없다 · 옆에 설 사람이 있다면', onPick:function(){
+            runBearer('carter');
+            return null;
+        } });
+      }
+      choices.push({ label:'내가 걸어 들어간다', note:selfBacked() ? '자격은 없다 · 뒤를 이어줄 사람이 있다' : '자격도, 뒤를 이어줄 사람도 없다', weighty:true, onPick:function(){
+          runBearer('self');
+          return null;
+      } });
+    } else if(hasItem('page')){
+      choices.push({ label:'아는 만큼이라도 구절을 외친다', note:'무엇이 값인지 모르는 채로', onPick:function(){
+          blindRitual();
+          return null;
+      } });
+    }
+
+    if(state.flags.boatOffer){
+      choices.push({ label:'부두로 내려가 자베즈의 배를 탄다', note:'마을을 등진다', onPick:function(){
+          showDiceEncounter({
+            title:'마지막 배', place:'블랙포인트 선착장',
+            text:'부두로 내려갑니다. 노인이 벌써 밧줄을 반쯤 풀어 놓고 기다리고 있습니다. "말했잖소. 기다려주지 않는다고."',
+            target:6, mods:nerveMods(),
+            onSuccess:function(){ return { text:'뛰어올라 배에 오릅니다.', next:function(){ endGame('boat'); } }; },
+            onFail:function(){
+              applyEffect({ health:-3 });
+              if(state.health <= 0) return { text:'발이 미끄러집니다. 물에 빠진 순간, 아래에서 무언가가 발목을 잡습니다.', next:function(){ endGame('death'); } };
+              return { text:'겨우 뱃전에 매달려 끌려 올라갑니다. 노인이 당신을 끌어올리며 한 번도 뒤를 돌아보지 않습니다.', next:function(){ endGame('boat'); } };
+            }
+          });
+          return null;
+      } });
+    }
+
+    if(state.flags.cultOffer){
+      choices.push({ label:'두건을 쓰고 원 안에 선다', note:'맞이하는 쪽은 잡아먹히지 않는다', weighty:true, onPick:function(){
+          return { text:'주머니의 천을 꺼내 머리에 씁니다. 소금기에 절어 뻣뻣합니다. 원이 조용히 벌어져 자리를 내줍니다.', next:function(){ endGame('joined'); } };
+      } });
+    }
+
+    choices.push({ label:'물러나 도망친다', onPick:function(){
+        showChoiceEncounter({
+          title:'돌아보지 말 것', place:'숲길',
+          text:'등 뒤에서 무언가 당신의 이름을 부릅니다. 낯익은 목소리 같기도 합니다.',
+          choices:[
+            { label:'돌아보지 않는다', onPick:function(){
+                return { text:'이를 악물고 뒤돌아보지 않은 채 달립니다.', next:function(){ endGame('flee'); } };
+            } },
+            { label:'참지 못하고 돌아본다', onPick:function(){
+                applyEffect({ sanity:-3 });
+                return { text:'그 순간, 보아서는 안 될 것을 보고 맙니다.', next:function(){ endGame('flee_looked'); } };
+            } }
+          ]
+        });
+        return null;
+    } });
+
+    if(state.sanity <= 2 && !state.flags.cultOffer){
+      choices.push({ label:'원 안으로 걸어 들어간다', note:'더는 무섭지 않다', weighty:true, onPick:function(){
+          return { text:'두건 하나가 건네집니다. 받아 쓰는 손이 떨리지 않습니다.', next:function(){ endGame('joined'); } };
+      } });
+    }
+
+    showChoiceEncounter({
+      title:'누가 값을 치를 것인가', place:'제단 · 마지막 밤',
+      text: ritualReady()
+        ? '제단 앞에 섭니다. 물이 가장 많이 빠지는 한 시간이 시작되었습니다.'
+        : '제단 앞에 섭니다. 무엇이 부족한지조차 모르는 채로.',
+      choices:choices
+    });
+  }
+
+  /* --- 메리에게 묻는 일은 그 자체가 선택이다 --- */
+  function askMary(){
+    showChoiceEncounter({
+      title:'열한 살에게 묻다', place:'제단 · 마지막 밤',
+      text:'젖은 소녀가 공터 가장자리에 서 있습니다. 팔십 년 동안 가리키기만 했던 팔이 지금은 내려가 있습니다.' + BR +
+           '그녀도 휘트필드입니다. 계약을 맺은 피입니다. 자격이 있습니다.' + BR +
+           '일라이어스는 이렇게 적었습니다. "나는 그것을 알고도 하지 못했다. 대신 남의 아이를 보냈다."' + BR +
+           '지금 당신이 하려는 일이 정확히 그것입니다. 다만 이번에는 묻기라도 합니다.',
+      choices:[
+        { label:'그래도 묻는다', note:'백 년 전과 같은 선택 · 이번에는 동의를 받는다', weighty:true, onPick:function(){
+            state.flags.askedMary = true;
+            logLine('열한 살짜리에게 물었고, 그 아이가 고개를 끄덕였다.');
+            runBearer('mary');
+            return null;
+        } },
+        { label:'묻지 않는다', note:'다른 값을 찾는다', onPick:function(){
+            state.flags.sparedMary = true;
+            logLine('메리에게는 묻지 않았다.');
+            return { text:'입을 열려다 그만둡니다.' + BR +
+                          '그 아이가 고개를 살짝 기울입니다. 왜 묻지 않느냐고 묻는 것 같기도 하고, 고맙다는 것 같기도 합니다.' + BR +
+                          '어느 쪽인지는 끝내 알 수 없을 것입니다.', next:finaleChoices };
+        } }
+      ]
+    });
+  }
+
+  function bearerConfig(who){
+    if(who === 'martha') return {
+      lead:'마사의 이름을 부릅니다. 그녀는 행렬 뒤쪽에서 이미 걸어 나오고 있었습니다. 부르기를 기다린 사람의 걸음이었습니다.',
+      bonus:[{ label:'관리자의 피', value:4 }], ending:'seal_martha' };
+    if(who === 'mary') return {
+      lead:'젖은 소녀가 당신과 제단 사이로 걸어 나옵니다. 팔십 년 만에 처음으로, 가리키는 대신 스스로 움직입니다.',
+      bonus:[{ label:'관리자의 피', value:4 }, { label:'본인의 동의', value:1 }], ending:'seal_mary' };
+    if(who === 'carter') return {
+      lead:'엘든의 이름을 부릅니다. 그가 무리를 등지고 걸어 나옵니다. 마지막으로 그의 눈이 제자리로 돌아와 있습니다.' + BR +
+           '"내가 하려던 게 이거였네. 그런데 자격이 없더군. 우습지."' + BR +
+           '그때 젖은 소녀가 그의 옆에 섭니다.',
+      bonus:[{ label:'관리자의 피', value:4 }, { label:'두 사람', value:1 }], ending:'seal_carter' };
+    return {
+      lead:'자격이 없다는 것은 압니다. 그래도 걸어 들어갑니다.' + (selfBacked()
+            ? BR + '뒤에서 마사가 구절을 받아 외우기 시작합니다. 처음에는 떨리고, 곧 또렷해집니다.'
+            : BR + '아무도 뒤에서 구절을 이어주지 않습니다.'),
+      bonus: selfBacked() ? [{ label:'마사가 뒤를 잇는다', value:2 }] : [{ label:'자격 없음', value:-3 }],
+      ending: selfBacked() ? 'seal_self' : 'seal_self_alone' };
+  }
+
+  function runBearer(who){
+    var cfg = bearerConfig(who);
+    var options = shuffleArr(['느가 프타른 이아 크나아', '느가 프타른 이아 즈오스', '브라나 프타른 이아 크나아']);
+    showChoiceEncounter({
+      title:'구절을 떠올리다', place:'제단 · 마지막 밤',
+      text:cfg.lead + BR + '이제 구절입니다. 목소리를 내기 직전, 한 번 더 확인합니다. 어느 쪽이었습니까?',
+      choices:options.map(function(opt){
+        return { label:opt, onPick:function(){
+          sealRoll(who, cfg, opt === '느가 프타른 이아 크나아');
+          return null;
+        } };
+      })
+    });
+  }
+
+  function sealRoll(who, cfg, correct){
+    var extra = Math.floor(Math.max(0, clueCount() - 8) / 2);
+    var mods = obsMods().concat(cfg.bonus);
+    mods.push({ label: correct ? '구절이 맞다' : '구절이 틀렸다', value: correct ? 3 : -3 });
+    if(extra) mods.push({ label:'모아둔 단서', value:extra });
+    if(hasClue('carterfate')) mods.push({ label:'순서를 안다', value:1 });
+    if(state.flags.silasPromise) mods.push({ label:'등대가 어둡다', value:1 });
+    if(state.flags.knowSchism) mods.push({ label:'누가 누구인지 안다', value:1 });
+
+    showRollStep({
+      title:'봉인 의식', place:'제단 · 마지막 밤',
+      text:'물이 가장 많이 빠지는 한 시간입니다. 아래 것을 먼저 꺼내고, 그다음에 구절입니다.' + BR +
+           '단서 ' + clueCount() + '건이 이 순간을 받치고 있습니다.',
+      target:9, mods:mods, rollLabel:'구절을 끝까지 외운다',
+      onResolve:function(success){
+        if(success) return showContinueWithText('마지막 음절이 하늘을 가르며 울려 퍼집니다.', function(){ endGame(cfg.ending); });
+        applyEffect({ sanity:-4 });
+        if(state.sanity <= 0) return showContinueWithText('구절이 목에 걸려 엉킵니다. 무언가가 그 틈으로 들어옵니다.', function(){ endGame('madness'); });
+        showContinueWithText('구절이 엉키고, 아무 일도 일어나지 않습니다. 원 안의 얼굴들이 일제히 이쪽을 향합니다.', function(){
+          showChoiceEncounter({
+            title:'실패한 자리', place:'제단 · 마지막 밤',
+            text:'의식은 성립하지 않았습니다. 값을 치르려던 사람이 아직 물가에 서 있습니다.',
+            choices:[
+              { label:'다시 한 번 외운다', note:'정신력을 더 깎는다', weighty:true, onPick:function(){
+                  applyEffect({ sanity:-2 });
+                  if(state.sanity <= 0) return { text:'두 번째 시도는 끝까지 가지 못했습니다.', next:function(){ endGame('madness'); } };
+                  sealRoll(who, cfg, correct);
+                  return null;
+              } },
+              { label:'도망친다', onPick:function(){
+                  return { text:'뒤돌아 달립니다. 등 뒤에서 물소리가 크게 한 번 났습니다.', next:function(){ endGame('flee'); } };
+              } }
+            ]
+          });
+        });
+      }
+    });
+  }
+
+  function blindRitual(){
+    var options = shuffleArr(['느가 프타른 이아 크나아', '느가 프타른 이아 즈오스', '브라나 프타른 이아 크나아']);
+    showChoiceEncounter({
+      title:'아는 만큼', place:'제단 · 마지막 밤',
+      text:'무엇이 값인지 모르는 채로 구절을 외칩니다. 어느 쪽이었습니까?',
+      choices:options.map(function(opt){
+        return { label:opt, onPick:function(){
+          var correct = (opt === '느가 프타른 이아 크나아');
+          var mods = obsMods().concat([{ label: correct ? '구절이 맞다' : '구절이 틀렸다', value: correct ? 3 : -3 },
+                                       { label:'값을 모른다', value:-4 }]);
+          showRollStep({
+            title:'값 없는 의식', place:'제단 · 마지막 밤',
+            text:'구절만으로 될 일이었다면, 백 년 동안 아무도 죽지 않았을 것입니다.',
+            target:9, mods:mods, rollLabel:'끝까지 외운다',
+            onResolve:function(success){
+              if(success) return showContinueWithText('놀랍게도, 물살이 한 박자 멈칫합니다. 오래 가지는 않을 것입니다.', function(){ endGame('seal_self_alone'); });
+              applyEffect({ sanity:-4 });
+              if(state.sanity <= 0) return showContinueWithText('아무 일도 일어나지 않았습니다. 당신 안에서만 무언가 무너졌습니다.', function(){ endGame('madness'); });
+              showContinueWithText('아무 일도 일어나지 않습니다. 구절은 그저 소리였습니다.', function(){ endGame('flee'); });
+            }
+          });
+          return null;
+        } };
+      })
+    });
+  }
+
+  /* =========================================================
+     결말
+     ========================================================= */
+
+  function endingCoda(key){
+    if(key === 'seal_self' || key === 'seal_self_alone') return state.char.selfCoda;
+    if(key === 'flee' || key === 'flee_looked') return state.char.fleeLetter;
+    if(key === 'seal_mary' && state.flags.askedMary)
+      return '일라이어스는 남의 아이를 보냈습니다. 당신은 물어보고 보냈습니다.\n그 차이가 무엇인지는, 아마 평생 생각하게 될 것입니다.';
+    return '';
+  }
+
+  function endLog(){
+    var lines = state.log.slice();
+    if(state.flags.marthaHelped) lines.push('마사는 열쇠를 내주었습니다. 백 년 동안 자기 손으로는 열지 못한 것이었습니다.');
+    else if(state.flags.marthaFled) lines.push('마사는 마을을 떠났습니다. 관리자가 도망친 것은 백 년 만에 처음입니다.');
+    else if(state.flags.marthaDefied) lines.push('마사는 끝내 당신과 눈을 마주치지 않았습니다.');
+    if(state.flags.sparedMary) lines.push('그 아이에게는 묻지 않았습니다. 여덟 살이든 열한 살이든, 물어서 될 일이 아니라고 생각했습니다.');
+    if(state.flags.silasPromise) lines.push('그믐밤, 등대는 백 년 만에 처음으로 어두웠습니다. 사일러스는 다음 날 발견되지 않았습니다.');
+    if(state.flags.carterGunTaken) lines.push('그의 총은 아직 당신에게 있습니다. 돌려줄 사람은 이제 없습니다.');
+    else if(state.flags.carterMet) lines.push('엘든을 그곳에 두고 온 그 밤을, 당신은 평생 잊지 못할 것입니다.');
+    if(state.flags.knowCentury) lines.push('백 년 뒤에 이 일을 다시 겪을 사람을 생각하면, 적어 두어야 할 것이 많습니다.');
+    if(state.flags.cultOffer && !state.flags.joined) lines.push('길먼이 준 두건은 끝내 쓰지 않았습니다. 버리지도 못했습니다.');
+    return lines;
+  }
+
+  /* 결말 전용 그림이 없을 때 대신 쓸 장소 — 결말마다 다르게 해서 반복돼 보이지 않게 */
+  var END_FALLBACK = {
+    seal_martha:'loc-altar', seal_mary:'loc-well', seal_carter:'loc-altar',
+    seal_self:'loc-altar',   seal_self_alone:'loc-cave',
+    boat:'loc-harbor',
+    flee:'loc-forest',       flee_looked:'loc-forest',
+    joined:'loc-cave',
+    madness:'loc-well',      death:'loc-manor'
+  };
+
+  function endGame(key){
+    var e = ENDINGS[key] || ENDINGS.death;
+    document.body.classList.remove('is-final');
+    showScreen('end');
+    document.getElementById('end-title').textContent = e.title;
+    document.getElementById('end-char').textContent = state.char.name + ' · ' + state.char.role;
+    document.getElementById('end-text').textContent = e.text;
+    setArt('end-art', 'end-art-img', ['end-' + key, END_FALLBACK[key] || 'loc-altar']);
+
+    var coda = endingCoda(key);
+    var codaEl = document.getElementById('end-coda');
+    if(coda){ codaEl.hidden = false; codaEl.textContent = coda; }
+    else codaEl.hidden = true;
+
+    document.getElementById('end-sanity').textContent = state.sanity;
+    document.getElementById('end-health').textContent = state.health;
+    document.getElementById('end-clues').textContent = clueCount() + '건 / 핵심 ' +
+      (['phrase','timing','blood'].filter(hasClue).length) + '/3';
+
+    var log = document.getElementById('end-log');
+    log.innerHTML = '';
+    var all = endLog();
+    if(all.length === 0){
+      var p0 = document.createElement('p');
+      p0.textContent = '일지에 적힌 것이 거의 없습니다. 이 마을에 대해 당신이 알아낸 것은 많지 않았습니다.';
+      log.appendChild(p0);
+    } else {
+      all.forEach(function(s){
+        var p = document.createElement('p');
+        p.textContent = s;
+        log.appendChild(p);
+      });
+    }
+    saveBest(e.rank, e.title);
+  }
+
+  function saveBest(rank, title){
+    try{
+      var raw = localStorage.getItem('cthulhu_journal_best_v5');
+      var best = raw ? JSON.parse(raw) : null;
+      if(!best || rank > best.rank){
+        localStorage.setItem('cthulhu_journal_best_v5', JSON.stringify({ rank:rank, title:title }));
+      }
+    } catch(err){ /* 저장소를 쓸 수 없으면 무시 */ }
+  }
+  function loadBest(){
+    try{
+      var raw = localStorage.getItem('cthulhu_journal_best_v5');
+      return raw ? JSON.parse(raw) : null;
+    } catch(err){ return null; }
+  }
+
+  /* =========================================================
+     시작
+     ========================================================= */
+
+  function renderCharSelect(){
+    document.body.classList.remove('is-final','is-night');
+    showScreen('select');
+    var box = document.getElementById('char-list');
+    box.innerHTML = '';
+    Object.keys(CHARACTERS).forEach(function(id){
+      var c = CHARACTERS[id];
+      var btn = document.createElement('button');
+      btn.className = 'char-card';
+      var por = document.createElement('img');
+      por.className = 'char-portrait';
+      por.style.display = 'none';
+      loadArtInto(por, 'pc-' + id,
+        function(){ por.style.display = 'block'; },
+        function(){ por.remove(); });
+      btn.appendChild(por);
+      var n = document.createElement('div'); n.className = 'char-name'; n.textContent = c.name + ' — ' + c.role;
+      var d = document.createElement('div'); d.className = 'char-desc'; d.textContent = c.desc;
+      var st = document.createElement('div'); st.className = 'char-stats';
+      var parts = ['정신력 '+c.sanityMax, '체력 '+c.healthMax];
+      if(c.obs) parts.push('조사 '+(c.obs>0?'+':'')+c.obs);
+      if(c.nerve) parts.push('담력 '+(c.nerve>0?'+':'')+c.nerve);
+      if(c.heal) parts.push('치료 +'+c.heal);
+      st.textContent = parts.join('  ·  ');
+      btn.appendChild(n); btn.appendChild(d); btn.appendChild(st);
+      btn.addEventListener('click', function(){ startGame(id); });
+      box.appendChild(btn);
+    });
+  }
+
+  function startGame(charId){
+    state = newState(charId);
+    beatQueue = [];
+    showScreen('game');
+    placeLead();
+    showNarrativeBeat(
+      state.char.name + ' · ' + state.char.role,
+      state.char.tie + BR +
+      '종착역에서 내려 다시 두 시간을 걸었습니다. 도로 표지판에 블랙포인트라는 이름이 나온 것은 단 한 번이었고, 그마저 페인트가 벗겨져 반쯤 읽히지 않았습니다.' + BR +
+      '안개가 육지 쪽으로 밀려오고 있습니다. 바다에서 오는 안개는 보통 짠내가 나는데, 이 안개에서는 다른 냄새가 납니다. 오래 닫아둔 지하실 같은, 젖은 돌 냄새입니다.' + BR +
+      '열이틀 남았습니다.',
+      renderMap,
+      { place:'블랙포인트 · 10월 2일' }
+    );
+  }
+
+  document.getElementById('btn-start').addEventListener('click', renderCharSelect);
+  document.getElementById('btn-restart').addEventListener('click', renderCharSelect);
+  document.querySelectorAll('.map-node').forEach(function(btn){
+    btn.addEventListener('click', function(){ visitLocation(btn.dataset.loc); });
+  });
+
+  var jt = document.getElementById('journal-toggle');
+  jt.addEventListener('click', function(){
+    var j = document.getElementById('journal');
+    var open = j.hidden;
+    j.hidden = !open;
+    jt.setAttribute('aria-expanded', open ? 'true' : 'false');
+    document.getElementById('journal-arrow').textContent = open ? '접기 ▴' : '펼치기 ▾';
+  });
+
+  detectArtBase();      /* 삽화 폴더 위치를 먼저 확인해 둔다 */
+
+  var best = loadBest();
+  if(best){
+    var el = document.getElementById('best-record');
+    el.hidden = false;
+    el.textContent = '지금까지 최고 기록: ' + best.title;
+  }
+})();
+</script>
+<script>
+/* 오프라인 설치 — 게임 본체와는 상관없이, 기기에 저장하고 그 상태를 알려준다 */
+(function(){
+  var st   = document.getElementById('offline-status');
+  var hint = document.getElementById('install-hint');
+
+  var ua = navigator.userAgent || '';
+  var isIOS = /iPhone|iPad|iPod/.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  var standalone = window.navigator.standalone === true ||
+                   (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches);
+  if(!standalone && hint){
+    hint.hidden = false;
+    hint.innerHTML = isIOS
+      ? '휴대폰에 설치하려면 사파리 아래쪽 <b>공유 버튼(□↑)</b> → <b>홈 화면에 추가</b>를 누르세요. 그다음부터는 홈 화면 아이콘으로 인터넷 없이 열립니다.'
+      : '휴대폰에 설치하려면 브라우저 메뉴(⋮)에서 <b>홈 화면에 추가</b> 또는 <b>앱 설치</b>를 누르세요. 그다음부터는 인터넷 없이 열립니다.';
+  }
+
+  if(!('serviceWorker' in navigator)){
+    if(st){ st.hidden = false; st.textContent = '이 브라우저에서는 오프라인 저장을 쓸 수 없습니다.'; }
+    return;
+  }
+  function ready(){
+    if(!st) return;
+    st.hidden = false;
+    st.className = 'offline-status ready';
+    st.textContent = '✓ 이 기기에 저장됨 — 인터넷 없이도 플레이할 수 있습니다';
+  }
+  navigator.serviceWorker.addEventListener('message', function(e){
+    if(e.data && e.data.type === 'offline-ready') ready();
+  });
+  if(navigator.serviceWorker.controller) ready();
+  else if(st){ st.hidden = false; st.textContent = '이 기기에 저장하는 중… (처음 한 번, 5MB 정도)'; }
+
+  window.addEventListener('load', function(){
+    navigator.serviceWorker.register('./sw.js').catch(function(){
+      if(st){ st.hidden = false; st.textContent = '오프라인 저장을 시작하지 못했습니다. 인터넷 연결을 확인하세요.'; }
+    });
+  });
+})();
+</script>
+</body>
+</html>

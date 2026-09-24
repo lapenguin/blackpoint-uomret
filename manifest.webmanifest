@@ -1,0 +1,30 @@
+{
+  "name": "심연의 일지 — 블랙포인트 사건",
+  "short_name": "심연의 일지",
+  "description": "백 년째 제물을 바쳐온 항구 마을에서, 그믐밤에 누가 값을 치를지 알아내는 조사 게임",
+  "lang": "ko",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#070a09",
+  "theme_color": "#0e1513",
+  "icons": [
+    {
+      "src": "icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    },
+    {
+      "src": "icons/icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}
