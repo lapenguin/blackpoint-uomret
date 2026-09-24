@@ -1,17 +1,24 @@
 /* 심연의 일지 — 오프라인 저장
    처음 열 때 게임·그림·글꼴을 전부 기기에 저장해 두고, 그 뒤로는 저장본으로 실행한다.
    게임을 고치면 VERSION 만 바꾸면 된다. 다음 실행 때 새 버전으로 바뀐다. */
-var VERSION  = '2026-09-24.1';
+var VERSION  = '2026-09-24.121121';
 var CACHE    = 'blackpoint-' + VERSION;
 var FONT_CSS = 'https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600&family=Nanum+Myeongjo:wght@400;700&display=swap';
 var CORE     = [
   "./",
   "./index.html",
   "./manifest.webmanifest",
+  "./css/style.css",
+  "./js/data.js",
+  "./js/engine.js",
+  "./js/finale.js",
+  "./js/pwa.js",
+  "./js/scenes.js",
+  "./js/turn.js",
+  "./icons/apple-touch-icon.png",
   "./icons/icon-192.png",
   "./icons/icon-512.png",
   "./icons/icon-maskable-512.png",
-  "./icons/apple-touch-icon.png",
   "./art/loc-altar.jpg",
   "./art/loc-cave.jpg",
   "./art/loc-chapel.jpg",
