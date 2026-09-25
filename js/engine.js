@@ -112,7 +112,6 @@ function sumMods(mods){
 function obsMods(){
   var m = [];
   if(state.char.obs) m.push({ label:'관찰', value:state.char.obs });
-  if(hasItem('match')) m.push({ label:'성냥불', value:1 });
   if(hasItem('notebook')) m.push({ label:'해나의 공책', value:1 });
   var ss = sanityStatus();
   if(ss === 'wounded') m.push({ label:'동요', value:-1 });
@@ -177,12 +176,7 @@ function selfBacked(){ return !!state.flags.marthaToldTruth && !state.flags.mart
 function bearers(){
   return [
     { id:'martha', name:'마사 휘트필드', ready:marthaReady(), note:marthaNote() },
-    { id:'mary', name:'메리 휘트필드', ready:maryReady(),
-      note: maryReady()
-        ? '팔십 년 만에 처음으로, 물어볼 수 있는 자리에 와 있습니다.'
-        : (footprintStage() > 0
-            ? '젖은 발자국 ' + footprintStage() + '/3 — 조금씩 가까워지고 있습니다.'
-            : '아직 아무것도 모릅니다. 이 마을에 남은 것이 산 사람뿐인지도.') },
+    { id:'mary', name:'메리 휘트필드', ready:maryReady(), note:maryNote() },
     { id:'carter', name:'엘든 카터', ready:carterReady(),
       note: state.flags.carterGunTaken
         ? '그의 총을 당신이 가지고 있습니다. 그는 이제 아무것도 내놓을 것이 없습니다.'
@@ -197,6 +191,24 @@ function bearers(){
                         : '자격도, 뒤를 이어줄 사람도 없습니다. 그저 스물네 번째 이름이 될 뿐입니다.')
         : '언제든 걸어 들어갈 수는 있습니다. 그것이 무슨 뜻인지는 아직 모릅니다.' }
   ];
+}
+
+/* 젖은 발자국이 다음에 어떻게 오는지 — 조건을 숫자가 아니라 이야기로 알려 준다 */
+function maryNote(){
+  var st = footprintStage();
+  if(maryReady()) return '팔십 년 만에 처음으로, 물어볼 수 있는 자리에 와 있습니다.';
+  if(st === 0){
+    if(!hasClue('flyer')) return '아직 아무것도 모릅니다. 이 마을에 남은 것이 산 사람뿐인지도.';
+    return '전단의 첫 번째 이름이 마음에 걸립니다. 지붕 아래에 머물 때 무언가 따라 들어올지도 모릅니다.';
+  }
+  var head = '젖은 발자국 ' + st + '/3 — ';
+  if(st === 1) return head + (hasClue('ledger')
+    ? '밤이 되면 더 가까이 올 것 같습니다.'
+    : '휘트필드 가의 장부를 본 사람을 찾아오는 것 같습니다. 저택에 장부가 있습니다.');
+  if(st === 2) return head + (hasItem('flower')
+    ? '마른 꽃을 쥐고 우물가나 저택, 숲에 가면 마주칠 것 같습니다.'
+    : '발자국은 저택 뒤 마른 우물 쪽에서 옵니다. 그 아이가 알아볼 만한 것이 거기 있습니다.');
+  return head + '마주 섰습니다. 다만 무엇이 값인지 당신이 아직 모릅니다.';
 }
 
 /* 마사가 지금 어디쯤 와 있는지 — 할 일이 남았으면 어디로 가야 하는지까지 */
@@ -393,13 +405,18 @@ function useWhiskey(){
   if(!hasItem('whiskey')) return;
   removeItem('whiskey');
   applyEffect({ sanity:3, health:-1 });
-  updateStatsUI(); updateInventoryUI();
+  afterItemUse();
 }
 function useBandage(){
   if(!hasItem('bandage')) return;
   removeItem('bandage');
   applyEffect({ health:4 });
+  afterItemUse();
+}
+function afterItemUse(){
   updateStatsUI(); updateInventoryUI();
+  if(document.getElementById('map-section').hidden) return;   /* 장면 도중에는 지도로 돌아올 때 갱신된다 */
+  renderNextStep(); renderJournal(); saveProgress();
 }
 
 function updateInventoryUI(){
@@ -438,6 +455,7 @@ function canReach(id){
 }
 
 function renderMap(){
+  placeLead();
   saveProgress();
   document.body.classList.remove('in-scene', 'peek');
   window.scrollTo(0, 0);
@@ -529,16 +547,17 @@ function nearestOf(locs){
 function renderNextStep(){
   var el = document.getElementById('next-step');
   if(!el) return;
-  var sanLow = state.sanity <= state.sanityMax * 0.5;
-  var hpLow  = state.health <= state.healthMax * 0.5;
+  var sanLow = state.sanity < state.sanityMax * 0.5;
+  var hpLow  = state.health < state.healthMax * 0.5;
   var pick = null, cls = '', head = '', text = '';
 
   if(sanLow || hpLow){
-    pick = nearestOf(['inn', 'harbor']);
+    /* 쉬는 장면이 바로 나오는 곳을 먼저. 둘 다 다른 일이 기다리면 가까운 쪽을 알리되 그렇다고 말한다 */
+    pick = nearestOf(['inn', 'harbor'].filter(canRestAt)) || nearestOf(['inn', 'harbor']);
     if(pick){
       cls = 'warn';
       head = (sanLow ? '정신력' : '체력') + '이 절반 아래입니다';
-      text = LOC[pick.loc].name + '에서 쉬세요';
+      text = LOC[pick.loc].name + '에서 쉬세요' + (canRestAt(pick.loc) ? '' : ' — 다만 쉬기 전에 먼저 마주칠 일이 있습니다');
     }
   }
   if(!pick && state.watch >= 3 && !isNight()){
@@ -983,6 +1002,7 @@ var ESCAPE_LINES = [
 
 function startChase(nextFn, opts){
   opts = opts || {};
+  state.lastChaseDay = state.day;
   var foe = opts.foe || PURSUERS.cult;
   var c = {
     foe:foe, stage:1, stages:opts.stages || 2,

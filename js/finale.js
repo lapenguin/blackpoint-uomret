@@ -75,7 +75,7 @@ function finaleChoices(){
         showDiceEncounter({
           title:'마지막 배', place:'블랙포인트 선착장',
           text:'부두로 내려갑니다. 노인이 벌써 밧줄을 반쯤 풀어 놓고 기다리고 있습니다. "말했잖소. 기다려주지 않는다고."',
-          target:6, mods:nerveMods(),
+          target:6, mods:nerveMods().concat(state.flags.knowTribute ? [{ label:'배가 뜨는 때를 안다', value:1 }] : []),
           onSuccess:function(){ return { text:'뛰어올라 배에 오릅니다.', next:function(){ endGame('boat'); } }; },
           onFail:function(){
             applyEffect({ health:-3 });
@@ -179,19 +179,20 @@ function askMaryForCarter(){
 function bearerConfig(who){
   if(who === 'martha') return {
     lead:'마사의 이름을 부릅니다. 그녀는 행렬 뒤쪽에서 이미 걸어 나오고 있었습니다. 부르기를 기다린 사람의 걸음이었습니다.',
-    bonus:[{ label:'관리자의 피', value:4 }], ending:'seal_martha' };
+    bonus:[{ label:'관리자의 피', value:2 }], ending:'seal_martha' };
   if(who === 'mary') return {
     lead:'젖은 소녀가 당신과 제단 사이로 걸어 나옵니다. 팔십 년 만에 처음으로, 가리키는 대신 스스로 움직입니다.',
-    bonus:[{ label:'관리자의 피', value:4 }, { label:'본인의 동의', value:1 }], ending:'seal_mary' };
+    bonus:[{ label:'관리자의 피', value:2 }, { label:'본인의 동의', value:1 }], ending:'seal_mary' };
   if(who === 'carter') return {
     lead:'젖은 소녀가 엘든의 옆에 섭니다. 마지막으로 그의 눈이 제자리로 돌아와 있습니다.' + BR +
          '"내가 하려던 게 이거였네. 그런데 자격이 없더군. 우습지."',
-    bonus:[{ label:'관리자의 피', value:4 }, { label:'두 사람', value:1 }], ending:'seal_carter' };
+    bonus:[{ label:'관리자의 피', value:2 }, { label:'두 사람', value:1 }], ending:'seal_carter' };
   return {
     lead:'자격이 없다는 것은 압니다. 그래도 걸어 들어갑니다.' + (selfBacked()
           ? BR + '뒤에서 마사가 구절을 받아 외우기 시작합니다. 처음에는 떨리고, 곧 또렷해집니다.'
           : BR + '아무도 뒤에서 구절을 이어주지 않습니다.'),
-    bonus: selfBacked() ? [{ label:'마사가 뒤를 잇는다', value:2 }] : [{ label:'자격 없음', value:-3 }],
+    bonus: (selfBacked() ? [{ label:'마사가 뒤를 잇는다', value:2 }] : [{ label:'자격 없음', value:-1 }])
+             .concat(state.flags.selfOffered ? [{ label:'명단에 스스로 이름을 올렸다', value:1 }] : []),
     ending: selfBacked() ? 'seal_self' : 'seal_self_alone' };
 }
 
@@ -211,13 +212,14 @@ function runBearer(who){
 }
 
 function sealRoll(who, cfg, correct){
-  var extra = Math.floor(Math.max(0, clueCount() - 8) / 2);
+  var extra = Math.min(2, Math.floor(Math.max(0, clueCount() - 8) / 3));
   var mods = obsMods().concat(cfg.bonus);
-  mods.push({ label: correct ? '구절이 맞다' : '구절이 틀렸다', value: correct ? 3 : -3 });
+  mods.push({ label: correct ? '구절이 맞다' : '구절이 틀렸다', value: correct ? 1 : -3 });
   if(extra) mods.push({ label:'모아둔 단서', value:extra });
   if(hasClue('carterfate')) mods.push({ label:'순서를 안다', value:1 });
   if(state.flags.silasPromise) mods.push({ label:'등대가 어둡다', value:1 });
   if(state.flags.knowSchism) mods.push({ label:'누가 누구인지 안다', value:1 });
+  if(who === 'mary' && state.flags.knowMary) mods.push({ label:'그 아이의 이름을 안다', value:1 });
 
   showRollStep({
     title:'봉인 의식', place:'제단 · 마지막 밤',
@@ -259,8 +261,8 @@ function blindRitual(){
     choices:options.map(function(opt){
       return { label:opt, onPick:function(){
         var correct = (opt === '느가 프타른 이아 크나아');
-        var mods = obsMods().concat([{ label: correct ? '구절이 맞다' : '구절이 틀렸다', value: correct ? 3 : -3 },
-                                     { label:'값을 모른다', value:-4 }]);
+        var mods = obsMods().concat([{ label: correct ? '구절이 맞다' : '구절이 틀렸다', value: correct ? 1 : -3 },
+                                     { label:'값을 모른다', value:-2 }]);
         showRollStep({
           title:'값 없는 의식', place:'제단 · 마지막 밤',
           text:'구절만으로 될 일이었다면, 백 년 동안 아무도 죽지 않았을 것입니다.',
@@ -300,6 +302,10 @@ function endLog(key){
   if(state.flags.carterGunTaken) lines.push('그의 총은 아직 당신에게 있습니다. 돌려줄 사람은 이제 없습니다.');
   else if(state.flags.carterMet && key !== 'seal_carter') lines.push('엘든을 그곳에 두고 온 그 밤을, 당신은 평생 잊지 못할 것입니다.');
   if(state.flags.knowCentury) lines.push('백 년 뒤에 이 일을 다시 겪을 사람을 생각하면, 적어 두어야 할 것이 많습니다.');
+  if(state.flags.selfOffered && key !== 'seal_self' && key !== 'seal_self_alone')
+    lines.push('명단의 마지막 줄에는 당신의 이름이 적혀 있었습니다. 그 줄은 끝내 쓰이지 않았습니다.');
+  if(state.flags.marthaPushed && key !== 'seal_martha')
+    lines.push('마사에게 그녀의 이름을 적으라 했습니다. 그녀는 펜을 내려놓았고, 다시 들지 않았습니다.');
   if(state.flags.cultOffer && !state.flags.joined) lines.push('길먼이 준 두건은 끝내 쓰지 않았습니다. 버리지도 못했습니다.');
   return lines;
 }

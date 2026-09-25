@@ -3,7 +3,7 @@
    열 때마다 저장본이 온전한지 확인하고, 빠진 것이 있으면 다시 채운다
    (아이폰은 오래 안 쓴 앱의 저장본을 지우기도 한다).
    VERSION 과 CORE 는 tools/release.py 가 채운다. 손으로 고치지 말 것. */
-var VERSION  = '2026-09-25.004320';
+var VERSION  = '2026-09-25.010125';
 var CACHE    = 'blackpoint-' + VERSION;
 var FONT_CSS = 'https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600&family=Nanum+Myeongjo:wght@400;700&display=swap';
 var CORE     = [

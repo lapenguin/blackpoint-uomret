@@ -63,7 +63,7 @@ function checkFootprints(){
     if(state.charId === 'sailor'){
       t += BR + '그녀가 당신을 보았을 때, 가리키던 팔이 잠깐 흔들렸습니다. 그녀는 당신을 알아보았습니다. 정확히는, 당신이 한 일을 알아보았습니다.';
     }
-    applyEffect({ sanity:-2, clue:'marydrown' });
+    applyEffect({ sanity:-1, clue:'marydrown' });
     return queueBeat('젖은 발자국 · 세 번째', t, { art:'npc-mary' });
   }
 }
@@ -88,7 +88,7 @@ function timedBeats(){
     if(ritualReady()){
       var ready = bearers().filter(function(b){ return b.ready && b.id !== 'self'; });
       e += ready.length
-        ? BR + '구절도, 때도, 자격도 압니다. 그리고 갈 수 있는 사람이 있습니다. 해가 지기 전에 제단에 닿아야 합니다.'
+        ? BR + '구절도, 때도, 자격도 압니다. 그리고 갈 수 있는 사람이 있습니다. 해가 지면 모두 제단으로 향할 것입니다. 당신도.'
         : BR + '구절도, 때도, 자격도 압니다. 다만 갈 수 있는 사람을 아직 만들지 못했습니다.';
     } else {
       e += BR + '아직 모르는 것이 있습니다. 그래도 밤은 옵니다.';
@@ -162,6 +162,8 @@ function advanceTime(){
 
   var chased = nightPressure();
   runBeats(function(){
+    if(state.health <= 0) return endGame('death');
+    if(state.sanity <= 0) return handleZeroSanity(renderMap);
     if(chased){
       return startChase(function(){ renderMap(); }, {
         foe:chased,
@@ -234,8 +236,7 @@ function genericInvestigate(locId){
       return { text:pickOne(pool)(), next:afterScene };
     },
     onFail:function(){
-      applyEffect({ sanity:-1 });
-      return { text:pickOne(INVESTIGATE_FAIL) + ' (정신력 −1)', next:afterScene };
+      return { text:pickOne(INVESTIGATE_FAIL), next:afterScene };
     }
   });
 }

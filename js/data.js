@@ -11,8 +11,8 @@ var LAST_DAY = 13;      /* 그믐 — 도착한 날로부터 열이틀 뒤 */
 var START_DATE = 1;     /* 첫날이 10월 2일 */
 
 var ITEM_META = {
-  match:   { label:'성냥',        icon:'🔥', note:'사일러스의 창고에서. 어두운 곳을 살필 때 +1' },
-  whiskey: { label:'위스키',      icon:'🥃', note:'자베즈가 건넨 것. 마시면 정신력 +2, 체력 -1' },
+  match:   { label:'성냥',        icon:'🔥', note:'어두운 곳(우물, 납골당, 물 빠진 굴)을 살필 때 +1' },
+  whiskey: { label:'위스키',      icon:'🥃', note:'마시면 정신력 +3, 체력 -1' },
   cross:   { label:'은제 십자가',  icon:'✝️', note:'카터의 수첩 갈피에서. 쫓길 때 받는 피해 -1' },
   gun:     { label:'권총',        icon:'🔫', note:'낡았지만 쏠 수는 있다. 담력 +2' },
   page:    { label:'찢겨나간 페이지', icon:'📜', note:'동굴 바닥에서. 봉인의 구절' },
