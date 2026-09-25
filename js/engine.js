@@ -188,7 +188,7 @@ function bearers(){
     { id:'self', name:'당신', ready:true,
       note: hasClue('blood')
         ? (selfBacked() ? '자격은 없습니다. 시간은 살 수 있습니다. 뒤에서 구절을 이어줄 사람이 있다면.'
-                        : '자격도, 뒤를 이어줄 사람도 없습니다. 그저 스물네 번째 이름이 될 뿐입니다.')
+                        : '자격도, 뒤를 이어줄 사람도 없습니다. 그저 장부의 다음 줄이 될 뿐입니다.')
         : '언제든 걸어 들어갈 수는 있습니다. 그것이 무슨 뜻인지는 아직 모릅니다.' }
   ];
 }
@@ -282,15 +282,19 @@ function pickFresh(key, arr){
   state.lastTravel[key] = s;
   return s;
 }
+/* 마을 밖 — 골목, 창문, 문 같은 말이 어울리지 않는 곳 */
+var WILD_LOCS = ['forest', 'altar', 'well', 'cave', 'lighthouse'];
+
 function composeTravel(from, to){
   var when = isNight() ? 'night' : 'day';
   var base = (from === to)
     ? pickFresh('stay-' + when, TRAVEL.stay[when])
     : pickFresh(to + '-' + when, (TRAVEL.arrive[to] || {})[when]);
   var extra = '';
+  var town = WILD_LOCS.indexOf(to) === -1;
   if(state.sanity <= state.sanityMax * 0.5 && Math.random() < 0.6) extra = pickFresh('san', TRAVEL.sanLow);
-  else if(state.watch >= 3 && Math.random() < 0.6)                 extra = pickFresh('watch', TRAVEL.watched);
-  else if(state.day >= 9 && Math.random() < 0.5)                    extra = pickFresh('late', TRAVEL.late);
+  else if(town && state.watch >= 3 && Math.random() < 0.6)         extra = pickFresh('watch', TRAVEL.watched);
+  else if(town && state.day >= 9 && Math.random() < 0.5)           extra = pickFresh('late', TRAVEL.late);
   else if(Math.random() < 0.3)                                      extra = pickFresh('char', TRAVEL.char[state.charId]);
   return base + (extra ? ' ' + extra : '');
 }
@@ -352,7 +356,7 @@ function renderJournal(){
     head.appendChild(nm); head.appendChild(st);
     var note = document.createElement('div');
     note.className = 'bearer-note';
-    note.textContent = b.note;
+    note.textContent = voice(b.note);
     box.appendChild(head); box.appendChild(note);
     bl.appendChild(box);
   });
@@ -775,11 +779,11 @@ function openEncounter(title, text, place, art){
   setArt('event-art', 'event-art-img', sceneArt(art));
   document.getElementById('map-section').hidden = true;
   document.getElementById('encounter-section').hidden = false;
-  document.getElementById('event-title').textContent = title;
+  document.getElementById('event-title').textContent = voice(title);
   var pl = document.getElementById('event-place');
   if(place){ pl.hidden = false; pl.textContent = place; }
   else pl.hidden = true;
-  document.getElementById('event-text').textContent = text;
+  document.getElementById('event-text').textContent = voice(text);
   document.getElementById('doc-area').hidden = true;
   document.getElementById('track-area').hidden = true;
 }
@@ -788,7 +792,22 @@ function showDoc(head, body){
   var area = document.getElementById('doc-area');
   area.hidden = false;
   document.getElementById('doc-head').textContent = head;
-  document.getElementById('doc-body').textContent = body;
+  document.getElementById('doc-body').textContent = voice(body);
+}
+
+/* 받침이 있으면 앞의 조사, 없으면 뒤의 조사 */
+function josa(word, withFinal, without){
+  var c = word.charCodeAt(word.length - 1) - 0xAC00;
+  return word + ((c >= 0 && c <= 11171 && c % 28) ? withFinal : without);
+}
+
+/* 선원은 카터를 만난 적이 없다. 서술이 그를 '엘든'이라 부르면 '카터 교수'로 고쳐 읽힌다 */
+var VOICE_JOSA = { '이':'가', '은':'는', '을':'를', '과':'와', '이라는':'라는' };
+function voice(s){
+  if(!s || typeof s !== 'string' || !state || state.charId !== 'sailor') return s;
+  return s.replace(/엘든(?! 카터)(에게|이라는|이|은|을|과|의|도|만)?/g, function(m, p){
+    return '카터 교수' + (p === undefined ? '' : (VOICE_JOSA[p] !== undefined ? VOICE_JOSA[p] : p));
+  });
 }
 
 function showTrack(total, current){
@@ -806,11 +825,11 @@ function showTrack(total, current){
 function makeChoiceButton(c){
   var btn = document.createElement('button');
   btn.className = 'choice-btn' + (c.weighty ? ' weighty' : '');
-  btn.textContent = c.label;
+  btn.textContent = voice(c.label);
   if(c.note){
     var n = document.createElement('span');
     n.className = 'choice-note';
-    n.textContent = c.note;
+    n.textContent = voice(c.note);
     btn.appendChild(n);
   }
   btn.addEventListener('click', function(){
@@ -994,11 +1013,22 @@ var CAUGHT_LINES = [
   '발이 걸려 넘어집니다. 일어서는 사이에 거리가 사라집니다.',
   '막다른 벽입니다. 되돌아 나오는 길밖에 없고, 그 길에는 그들이 있습니다.'
 ];
-var ESCAPE_LINES = [
-  '숨을 죽인 채 지나갑니다. 등불이 옆을 스치고, 멀어집니다.',
-  '담을 넘어 골목으로 빠집니다. 발소리가 엉뚱한 방향으로 흩어집니다.',
-  '한참을 웅크리고 있다가, 아무 소리도 나지 않게 되었을 때 일어섭니다.'
-];
+var ESCAPE_LINES = {
+  hide:[ '숨을 죽인 채 기다립니다. 무언가 바로 옆을 스치고, 멀어집니다.',
+         '한참을 웅크리고 있다가, 아무 소리도 나지 않게 되었을 때 일어섭니다.' ],
+  run: [ '숨이 턱에 닿을 때까지 달립니다. 돌아보았을 때, 뒤에는 아무것도 없습니다.',
+         '발소리가 엉뚱한 방향으로 흩어집니다. 당신의 것만 남았습니다.' ],
+  rough:[ '아무도 따라올 생각을 못 하는 길로 넘어갑니다. 등 뒤의 소리가 끊깁니다.' ]
+};
+/* 마을 안에서만 어울리는 말 */
+var ESCAPE_TOWN = {
+  run:[ '담을 넘어 골목으로 빠집니다. 발소리가 엉뚱한 방향으로 흩어집니다.' ]
+};
+function escapeLine(kind){
+  var pool = ESCAPE_LINES[kind].slice();
+  if(ESCAPE_TOWN[kind] && WILD_LOCS.indexOf(state.location) === -1) pool = pool.concat(ESCAPE_TOWN[kind]);
+  return pickOne(pool);
+}
 
 function startChase(nextFn, opts){
   opts = opts || {};
@@ -1024,12 +1054,12 @@ function chaseStage(c, lead){
   var choices = [];
 
   choices.push({ label:'몸을 숨긴다', note:'관찰 판정 · 목표 6', onPick:function(){
-      chaseRoll(c, { target:6, mods:obsMods(), flavor:'그늘을 찾아 몸을 접어 넣습니다.', rollLabel:'숨을 죽인다' });
+      chaseRoll(c, { kind:'hide', target:6, mods:obsMods(), flavor:'그늘을 찾아 몸을 접어 넣습니다.', rollLabel:'숨을 죽인다' });
       return null;
   } });
 
   choices.push({ label:'달린다', note:'담력 판정 · 목표 7', onPick:function(){
-      chaseRoll(c, { target:7, mods:nerveMods(), flavor:'뒤돌아보지 않고 내달립니다.', rollLabel:'달린다' });
+      chaseRoll(c, { kind:'run', target:7, mods:nerveMods(), flavor:'뒤돌아보지 않고 내달립니다.', rollLabel:'달린다' });
       return null;
   } });
 
@@ -1044,11 +1074,11 @@ function chaseStage(c, lead){
         }
         if(state.charId === 'doctor'){
           applyEffect({ health:3 });
-          chaseStage(c, '벽에 등을 붙이고 숨을 고릅니다. 손이 기억하는 대로 상처를 싸맵니다. (체력 +3)');
+          chaseStage(c, '잠깐 몸을 낮추고 숨을 고릅니다. 손이 기억하는 대로 상처를 싸맵니다. (체력 +3)');
           return null;
         }
         c.sailorBoost = true;
-        chaseRoll(c, { target:7, mods:nerveMods(), extra:[{ label:'험한 길', value:3 }],
+        chaseRoll(c, { kind:'rough', target:7, mods:nerveMods(), extra:[{ label:'험한 길', value:3 }],
                        flavor:'배에서 익힌 걸음으로, 아무도 안 쓰는 길을 골라 넘어갑니다.', rollLabel:'넘어간다' });
         return null;
     } });
@@ -1081,7 +1111,7 @@ function chaseRoll(c, cfg){
     onResolve:function(success){
       if(success){
         c.stage += 1;
-        if(c.stage > c.stages) return finishChase(c, pickOne(ESCAPE_LINES));
+        if(c.stage > c.stages) return finishChase(c, escapeLine(cfg.kind || 'hide'));
         return chaseStage(c, '한 구간을 벌었습니다. 아직 끝난 것은 아닙니다.');
       }
       caught(c);
@@ -1099,14 +1129,17 @@ function caught(c){
   c.caught += 1;
 
   var msg = pickOne(CAUGHT_LINES) + BR + '체력 −' + dmg +
-    (hasItem('cross') ? ' (십자가가 한 점 덜어냈다)' : '') +
+    (hasItem('cross') ? ' (십자가가 한 점 덜어 주었습니다)' : '') +
     (sanLoss ? ' · 정신력 −' + sanLoss : '');
 
   if(state.health <= 0) return showContinueWithText(msg, function(){ endGame('death'); });
   if(state.sanity <= 0) return showContinueWithText(msg, function(){ handleZeroSanity(c.nextFn); });
 
   if(c.caught >= 2){
-    return showContinueWithText(msg + BR + '더는 버틸 수 없습니다. 그들이 당신을 마을 밖 길가에 내려놓고 돌아갑니다. 경고였습니다.',
+    var dropped = c.foe.dread
+      ? '더는 버틸 수 없습니다. 그러다 그것이 흥미를 잃습니다. 정신을 차려 보니 부두의 밧줄 더미 옆입니다.'
+      : '더는 버틸 수 없습니다. 그들이 당신을 부두의 밧줄 더미 옆에 내려놓고 돌아갑니다. 경고였습니다.';
+    return showContinueWithText(msg + BR + dropped,
       function(){ state.location = 'harbor'; c.nextFn(); });
   }
   showContinueWithText(msg, function(){ chaseStage(c, '간신히 몸을 빼냈습니다. 아직 따라옵니다.'); });

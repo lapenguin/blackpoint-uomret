@@ -28,7 +28,7 @@ function checkDeductions(){
 }
 
 /* --- 젖은 발자국: 세 번에 걸쳐, 조금씩 가까이 --- */
-var INDOORS = ['inn','manor','school','chapel','office'];
+var INDOORS = ['inn','manor','school','chapel'];
 
 function checkFootprints(){
   var inside = INDOORS.indexOf(state.location) !== -1;
@@ -39,7 +39,7 @@ function checkFootprints(){
     return queueBeat('젖은 발자국 · 첫 번째',
       '바닥에 젖은 발자국이 있습니다. 작습니다. 아이의 것입니다.' + BR +
       '밖에서 안으로 들어온 방향인데, 다시 나간 자국이 없습니다.' + BR +
-      '비는 사흘째 오지 않았습니다.');
+      '비는 며칠째 오지 않았습니다.');
   }
 
   if(state.flags.mary1 && !state.flags.mary2 && isNight() && hasClue('ledger')){
@@ -48,7 +48,9 @@ function checkFootprints(){
     return queueBeat('젖은 발자국 · 두 번째',
       '등 뒤에서 물이 떨어지는 소리가 납니다. 규칙적입니다.' + BR +
       '돌아보았을 때 아무도 없었고, 다만 방금까지 누군가 서 있었던 것처럼 바닥 한 자리가 젖어 있었습니다.' + BR +
-      '그 자리는 당신이 조금 전까지 등을 대고 있던 벽 바로 앞이었습니다.');
+      (INDOORS.indexOf(state.location) !== -1
+        ? '그 자리는 당신이 조금 전까지 등을 대고 있던 벽 바로 앞이었습니다.'
+        : '그 자리는 당신이 조금 전까지 서 있던 곳, 발뒤꿈치 바로 뒤였습니다.'));
   }
 
   if(state.flags.mary2 && !state.flags.mary3 && hasItem('flower') &&
@@ -80,7 +82,7 @@ function timedBeats(){
     var t = '하늘이 낮에도 붉게 물듭니다. 남은 사람은 몇 되지 않습니다.' + BR +
       '바닷물이 평소보다 한참 뒤로 물러나 있고, 드러난 갯벌에서 본 적 없는 것들이 말라가고 있습니다.';
     if(state.flags.carterMet) t += BR + '골목 끝에서 낯익은 실루엣이 스쳐 지나간 듯해 돌아보지만, 아무도 없습니다.';
-    queueBeat('사흘 남은 마을', t);
+    queueBeat('나흘 남은 마을', t);
   }
   if(!state.seen['eve'] && state.day === LAST_DAY){
     state.seen['eve'] = true;
@@ -195,13 +197,18 @@ function afterScene(){ endTurn(); }
    재방문 — 성과는 작지만 헛되지는 않게
    ========================================================= */
 
+/* 이름 뒤에 붙는다. [받침 있을 때, 없을 때] 로 조사를 고른다 */
 var INVESTIGATE_SETUP = [
-  '을(를) 다시 살피며 놓친 것이 없는지 확인합니다.',
-  ' 구석구석을 되짚어 봅니다.',
-  '에서 사람들의 눈치를 살피며 조용히 캐묻습니다.',
-  '에서 처음 지나쳤던 것들을 다시 봅니다.',
-  '을(를) 한 번 더 훑어봅니다.'
+  [['을', '를'], ' 다시 살피며 놓친 것이 없는지 확인합니다.'],
+  [null, ' 구석구석을 되짚어 봅니다.'],
+  [null, '에서 사람의 흔적을 더듬으며 조용히 살핍니다.'],
+  [null, '에서 처음 지나쳤던 것들을 다시 봅니다.'],
+  [['을', '를'], ' 한 번 더 훑어봅니다.']
 ];
+function investigateLine(name){
+  var x = pickOne(INVESTIGATE_SETUP);
+  return (x[0] ? josa(name, x[0][0], x[0][1]) : name) + x[1];
+}
 var INVESTIGATE_FAIL = [
   '별다른 소득 없이 불안한 마음만 커집니다.',
   '건질 것은 없고 시간만 흘려보냅니다.',
@@ -213,7 +220,7 @@ function genericInvestigate(locId){
   var name = LOC[locId].name;
   showDiceEncounter({
     title:name, place:LOC[locId].place,
-    text:name + pickOne(INVESTIGATE_SETUP),
+    text:investigateLine(name),
     target:6, mods:obsMods(),
     onSuccess:function(){
       var pool = [];

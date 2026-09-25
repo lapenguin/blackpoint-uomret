@@ -269,7 +269,7 @@ function visitLocation(id){
         renderMap);
     }
     return showNarrativeBeat('그쪽으로는 갈 수 없다',
-      LOC[id].name + '은(는) 여기서 바로 갈 수 없습니다. 길로 이어진 곳을 거쳐 가야 합니다.',
+      josa(LOC[id].name, '은', '는') + ' 여기서 바로 갈 수 없습니다. 길로 이어진 곳을 거쳐 가야 합니다.',
       renderMap);
   }
 
