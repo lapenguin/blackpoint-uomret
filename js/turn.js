@@ -139,8 +139,12 @@ function advanceTime(){
   state.phase += 1;
   if(state.phase > 1){ state.phase = 0; state.day += 1; }
 
-  if(state.day > LAST_DAY) return finale();
-  if(state.day === LAST_DAY && state.phase === 1) return finale();
+  /* 그믐밤 — 마지막 낮에 얻은 것도 맞춰 본 뒤에 제단으로 간다 */
+  if(state.day > LAST_DAY || (state.day === LAST_DAY && state.phase === 1)){
+    checkDeductions();
+    checkFootprints();
+    return runBeats(finale);
+  }
 
   /* 밤샘의 대가 — 지붕 아래라면 덜하다 */
   if(isNight() && !state.flags.restedTonight && state.location !== 'inn' && state.location !== 'harbor'){

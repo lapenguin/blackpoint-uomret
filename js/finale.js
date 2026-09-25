@@ -47,15 +47,15 @@ function finaleChoices(){
           return null;
       } });
     }
-    if(maryReady()){
+    if(maryReady() && !state.flags.sparedMary){
       choices.push({ label:'메리에게 묻는다', note:'열한 살에는 아무도 묻지 않았다', weighty:true, onPick:function(){
           askMary();
           return null;
       } });
     }
-    if(carterReady()){
-      choices.push({ label:'엘든의 이름을 부른다', note:'자격은 없다 · 옆에 설 사람이 있다면', onPick:function(){
-          runBearer('carter');
+    if(carterReady() && !state.flags.sparedMary){
+      choices.push({ label:'엘든의 이름을 부른다', note:'자격은 없다 · 메리가 옆에 서야 한다', onPick:function(){
+          askMaryForCarter();
           return null;
       } });
     }
@@ -151,6 +151,31 @@ function askMary(){
   });
 }
 
+/* 엘든에게는 자격이 없다. 옆에 설 자격은 메리에게 있고, 그 아이에게는 물어야 한다 */
+function askMaryForCarter(){
+  showChoiceEncounter({
+    title:'두 사람', place:'제단 · 마지막 밤',
+    text:'엘든의 이름을 부르자, 그가 무리를 등지고 걸어 나옵니다.' + BR +
+         '그러나 그 혼자로는 의식이 성립하지 않는다는 것을 당신도, 그도 압니다. 계약을 맺은 피가 곁에 서야 합니다.' + BR +
+         '젖은 소녀가 공터 가장자리에서 두 사람을 보고 있습니다. 그녀도 휘트필드입니다.' + BR +
+         '엘든과 함께 가 달라고 하려면, 먼저 그 아이에게 물어야 합니다.',
+    choices:[
+      { label:'메리에게 묻는다', note:'엘든 곁에 서 주겠느냐고', weighty:true, onPick:function(){
+          state.flags.askedMary = true;
+          logLine('열한 살짜리에게 엘든의 곁에 서 달라고 물었고, 그 아이가 고개를 끄덕였다.');
+          runBearer('carter');
+          return null;
+      } },
+      { label:'묻지 않는다', note:'다른 값을 찾는다', onPick:function(){
+          state.flags.sparedMary = true;
+          logLine('메리에게는 묻지 않았다.');
+          return { text:'입을 열려다 그만둡니다.' + BR +
+                        '엘든이 당신을 보고, 소녀를 보고, 천천히 무리 쪽으로 되돌아갑니다. "그래, 그게 맞네." 그가 말합니다.', next:finaleChoices };
+      } }
+    ]
+  });
+}
+
 function bearerConfig(who){
   if(who === 'martha') return {
     lead:'마사의 이름을 부릅니다. 그녀는 행렬 뒤쪽에서 이미 걸어 나오고 있었습니다. 부르기를 기다린 사람의 걸음이었습니다.',
@@ -159,9 +184,8 @@ function bearerConfig(who){
     lead:'젖은 소녀가 당신과 제단 사이로 걸어 나옵니다. 팔십 년 만에 처음으로, 가리키는 대신 스스로 움직입니다.',
     bonus:[{ label:'관리자의 피', value:4 }, { label:'본인의 동의', value:1 }], ending:'seal_mary' };
   if(who === 'carter') return {
-    lead:'엘든의 이름을 부릅니다. 그가 무리를 등지고 걸어 나옵니다. 마지막으로 그의 눈이 제자리로 돌아와 있습니다.' + BR +
-         '"내가 하려던 게 이거였네. 그런데 자격이 없더군. 우습지."' + BR +
-         '그때 젖은 소녀가 그의 옆에 섭니다.',
+    lead:'젖은 소녀가 엘든의 옆에 섭니다. 마지막으로 그의 눈이 제자리로 돌아와 있습니다.' + BR +
+         '"내가 하려던 게 이거였네. 그런데 자격이 없더군. 우습지."',
     bonus:[{ label:'관리자의 피', value:4 }, { label:'두 사람', value:1 }], ending:'seal_carter' };
   return {
     lead:'자격이 없다는 것은 압니다. 그래도 걸어 들어갑니다.' + (selfBacked()
@@ -209,7 +233,9 @@ function sealRoll(who, cfg, correct){
           title:'실패한 자리', place:'제단 · 마지막 밤',
           text:'의식은 성립하지 않았습니다. 값을 치르려던 사람이 아직 물가에 서 있습니다.',
           choices:[
-            { label:'다시 한 번 외운다', note:'정신력을 더 깎는다', weighty:true, onPick:function(){
+            { label:'다시 한 번 외운다', weighty:true,
+              note: state.sanity <= 2 ? '정신력 −2 · 지금 정신력으로는 끝까지 가지 못한다' : '정신력 −2 · 한 번 더 굴린다',
+              onPick:function(){
                 applyEffect({ sanity:-2 });
                 if(state.sanity <= 0) return { text:'두 번째 시도는 끝까지 가지 못했습니다.', next:function(){ endGame('madness'); } };
                 sealRoll(who, cfg, correct);
@@ -240,7 +266,7 @@ function blindRitual(){
           text:'구절만으로 될 일이었다면, 백 년 동안 아무도 죽지 않았을 것입니다.',
           target:9, mods:mods, rollLabel:'끝까지 외운다',
           onResolve:function(success){
-            if(success) return showContinueWithText('놀랍게도, 물살이 한 박자 멈칫합니다. 오래 가지는 않을 것입니다.', function(){ endGame('seal_self_alone'); });
+            if(success) return showContinueWithText('놀랍게도, 물살이 한 박자 멈칫합니다. 오래 가지는 않을 것입니다.', function(){ endGame('seal_blind'); });
             applyEffect({ sanity:-4 });
             if(state.sanity <= 0) return showContinueWithText('아무 일도 일어나지 않았습니다. 당신 안에서만 무언가 무너졌습니다.', function(){ endGame('madness'); });
             showContinueWithText('아무 일도 일어나지 않습니다. 구절은 그저 소리였습니다.', function(){ endGame('flee'); });
@@ -264,7 +290,7 @@ function endingCoda(key){
   return '';
 }
 
-function endLog(){
+function endLog(key){
   var lines = state.log.slice();
   if(state.flags.marthaHelped) lines.push('마사는 열쇠를 내주었습니다. 백 년 동안 자기 손으로는 열지 못한 것이었습니다.');
   else if(state.flags.marthaFled) lines.push('마사는 마을을 떠났습니다. 관리자가 도망친 것은 백 년 만에 처음입니다.');
@@ -272,7 +298,7 @@ function endLog(){
   if(state.flags.sparedMary) lines.push('그 아이에게는 묻지 않았습니다. 여덟 살이든 열한 살이든, 물어서 될 일이 아니라고 생각했습니다.');
   if(state.flags.silasPromise) lines.push('그믐밤, 등대는 백 년 만에 처음으로 어두웠습니다. 사일러스는 다음 날 발견되지 않았습니다.');
   if(state.flags.carterGunTaken) lines.push('그의 총은 아직 당신에게 있습니다. 돌려줄 사람은 이제 없습니다.');
-  else if(state.flags.carterMet) lines.push('엘든을 그곳에 두고 온 그 밤을, 당신은 평생 잊지 못할 것입니다.');
+  else if(state.flags.carterMet && key !== 'seal_carter') lines.push('엘든을 그곳에 두고 온 그 밤을, 당신은 평생 잊지 못할 것입니다.');
   if(state.flags.knowCentury) lines.push('백 년 뒤에 이 일을 다시 겪을 사람을 생각하면, 적어 두어야 할 것이 많습니다.');
   if(state.flags.cultOffer && !state.flags.joined) lines.push('길먼이 준 두건은 끝내 쓰지 않았습니다. 버리지도 못했습니다.');
   return lines;
@@ -281,7 +307,7 @@ function endLog(){
 /* 결말 전용 그림이 없을 때 대신 쓸 장소 — 결말마다 다르게 해서 반복돼 보이지 않게 */
 var END_FALLBACK = {
   seal_martha:'loc-altar', seal_mary:'loc-well', seal_carter:'loc-altar',
-  seal_self:'loc-altar',   seal_self_alone:'loc-cave',
+  seal_self:'loc-altar',   seal_self_alone:'loc-cave', seal_blind:'loc-altar',
   boat:'loc-harbor',
   flee:'loc-forest',       flee_looked:'loc-forest',
   joined:'loc-cave',
@@ -311,7 +337,7 @@ function endGame(key){
 
   var log = document.getElementById('end-log');
   log.innerHTML = '';
-  var all = endLog();
+  var all = endLog(key);
   if(all.length === 0){
     var p0 = document.createElement('p');
     p0.textContent = '일지에 적힌 것이 거의 없습니다. 이 마을에 대해 당신이 알아낸 것은 많지 않았습니다.';

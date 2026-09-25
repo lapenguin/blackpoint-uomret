@@ -170,24 +170,13 @@ function marthaReady(){
 }
 function maryReady(){ return footprintStage() >= 3 && hasClue('blood'); }
 function carterReady(){
-  return !!state.flags.carterPersuaded && !hasItem('gun') && maryReady();
+  return !!state.flags.carterPersuaded && !state.flags.carterGunTaken && maryReady();
 }
 function selfBacked(){ return !!state.flags.marthaToldTruth && !state.flags.marthaFled; }
 
 function bearers(){
   return [
-    { id:'martha', name:'마사 휘트필드', ready:marthaReady(),
-      note: marthaReady()
-        ? '진실을 알았고, 자기 차례라는 것도 받아들였습니다.'
-        : (state.flags.marthaFled
-            ? '떠났습니다. 백 년 만에 처음으로 관리자가 도망친 것입니다.'
-            : (hasClue('blood') && state.flags.marthaMercyMary
-                ? '진실을 전할 수 있습니다. 여관으로 가십시오.'
-                : (state.flags.suspectMartha && !state.flags.marthaDefied && !state.flags.marthaMercyMary
-                    ? '편지를 쓴 사람이 누구인지 압니다. 여관에서 마주 앉을 수 있습니다.'
-                    : (state.flags.metMartha
-                        ? (hasClue('blood') ? '자기 차례라고 말하게 하려면, 먼저 그녀의 사정을 들어야 했습니다.' : '관리자의 핏줄입니다. 다만 무엇이 값인지 당신이 아직 모릅니다.')
-                        : '여관 주인. 아직 제대로 이야기해 본 적이 없습니다.')))) },
+    { id:'martha', name:'마사 휘트필드', ready:marthaReady(), note:marthaNote() },
     { id:'mary', name:'메리 휘트필드', ready:maryReady(),
       note: maryReady()
         ? '팔십 년 만에 처음으로, 물어볼 수 있는 자리에 와 있습니다.'
@@ -195,17 +184,41 @@ function bearers(){
             ? '젖은 발자국 ' + footprintStage() + '/3 — 조금씩 가까워지고 있습니다.'
             : '아직 아무것도 모릅니다. 이 마을에 남은 것이 산 사람뿐인지도.') },
     { id:'carter', name:'엘든 카터', ready:carterReady(),
-      note: hasItem('gun')
+      note: state.flags.carterGunTaken
         ? '그의 총을 당신이 가지고 있습니다. 그는 이제 아무것도 내놓을 것이 없습니다.'
         : (carterReady()
             ? '자격은 없습니다. 다만 자격 있는 사람이 옆에 선다면.'
-            : (state.flags.carterMet ? '설득이 닿았는지는 그날 밤에야 알 수 있습니다.' : '아직 찾지 못했습니다.')) },
+            : (state.flags.carterPersuaded
+                ? '그날 밤 부르면 듣겠다고 했습니다. 다만 그에게는 자격이 없습니다. 옆에 설 사람이 필요합니다.'
+                : (state.flags.carterMet ? '예배당 뒷마당에 아직 있습니다. 함께 나가자고 말해 본 적은 없습니다.' : '아직 찾지 못했습니다.'))) },
     { id:'self', name:'당신', ready:true,
       note: hasClue('blood')
         ? (selfBacked() ? '자격은 없습니다. 시간은 살 수 있습니다. 뒤에서 구절을 이어줄 사람이 있다면.'
                         : '자격도, 뒤를 이어줄 사람도 없습니다. 그저 스물네 번째 이름이 될 뿐입니다.')
         : '언제든 걸어 들어갈 수는 있습니다. 그것이 무슨 뜻인지는 아직 모릅니다.' }
   ];
+}
+
+/* 마사가 지금 어디쯤 와 있는지 — 할 일이 남았으면 어디로 가야 하는지까지 */
+function marthaNote(){
+  var f = state.flags;
+  if(marthaReady()) return '진실을 알았고, 자기 차례라는 것도 받아들였습니다.';
+  if(f.marthaFled) return '떠났습니다. 백 년 만에 처음으로 관리자가 도망친 것입니다.';
+  if(!state.seen['i_confront']){
+    if(f.suspectMartha) return '편지를 쓴 사람이 누구인지 압니다. 여관에서 마주 앉을 수 있습니다.';
+    if(f.metMartha) return hasClue('blood') ? '관리자의 핏줄입니다. 다만 당신을 이 마을로 부른 까닭을 아직 모릅니다.'
+                                            : '관리자의 핏줄입니다. 다만 무엇이 값인지 당신이 아직 모릅니다.';
+    return '여관 주인. 아직 제대로 이야기해 본 적이 없습니다.';
+  }
+  if(!f.marthaMercyMary) return '메리가 누구였는지 아직 묻지 않았습니다. 여관에서 물어볼 수 있습니다.';
+  if(!hasClue('blood')) return '그녀의 사정은 들었습니다. 다만 무엇이 값인지 당신이 아직 모릅니다. 제단 아래에 답이 있습니다.';
+  if(!f.marthaToldTruth) return '진실을 전할 수 있습니다. 여관으로 가십시오.';
+  if(!f.marthaMercyLine){
+    return state.seen['i_last']
+      ? '진실은 전했습니다. 다만 그녀에게 선택을 남겨 주지는 않았습니다.'
+      : '진실은 전했습니다. 그믐이 가까워지면 그녀가 명단의 마지막 줄을 꺼낼 것입니다.';
+  }
+  return '';
 }
 
 function ritualReady(){ return hasClue('phrase') && hasClue('timing') && hasClue('blood'); }
@@ -317,7 +330,7 @@ function renderJournal(){
   bl.innerHTML = '';
   bearers().forEach(function(b){
     var box = document.createElement('div');
-    box.className = 'bearer' + (b.ready ? ' ready' : '') + (b.id === 'carter' && hasItem('gun') ? ' barred' : '');
+    box.className = 'bearer' + (b.ready ? ' ready' : '') + (b.id === 'carter' && state.flags.carterGunTaken ? ' barred' : '');
     var head = document.createElement('div');
     head.className = 'bearer-name';
     var nm = document.createElement('span'); nm.textContent = b.name;
