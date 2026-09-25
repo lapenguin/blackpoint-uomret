@@ -112,7 +112,6 @@ function sumMods(mods){
 function obsMods(){
   var m = [];
   if(state.char.obs) m.push({ label:'관찰', value:state.char.obs });
-  if(hasItem('match')) m.push({ label:'성냥불', value:1 });
   if(hasItem('notebook')) m.push({ label:'해나의 공책', value:1 });
   var ss = sanityStatus();
   if(ss === 'wounded') m.push({ label:'동요', value:-1 });
@@ -170,42 +169,68 @@ function marthaReady(){
 }
 function maryReady(){ return footprintStage() >= 3 && hasClue('blood'); }
 function carterReady(){
-  return !!state.flags.carterPersuaded && !hasItem('gun') && maryReady();
+  return !!state.flags.carterPersuaded && !state.flags.carterGunTaken && maryReady();
 }
 function selfBacked(){ return !!state.flags.marthaToldTruth && !state.flags.marthaFled; }
 
 function bearers(){
   return [
-    { id:'martha', name:'마사 휘트필드', ready:marthaReady(),
-      note: marthaReady()
-        ? '진실을 알았고, 자기 차례라는 것도 받아들였습니다.'
-        : (state.flags.marthaFled
-            ? '떠났습니다. 백 년 만에 처음으로 관리자가 도망친 것입니다.'
-            : (hasClue('blood') && state.flags.marthaMercyMary
-                ? '진실을 전할 수 있습니다. 여관으로 가십시오.'
-                : (state.flags.suspectMartha && !state.flags.marthaDefied && !state.flags.marthaMercyMary
-                    ? '편지를 쓴 사람이 누구인지 압니다. 여관에서 마주 앉을 수 있습니다.'
-                    : (state.flags.metMartha
-                        ? (hasClue('blood') ? '자기 차례라고 말하게 하려면, 먼저 그녀의 사정을 들어야 했습니다.' : '관리자의 핏줄입니다. 다만 무엇이 값인지 당신이 아직 모릅니다.')
-                        : '여관 주인. 아직 제대로 이야기해 본 적이 없습니다.')))) },
-    { id:'mary', name:'메리 휘트필드', ready:maryReady(),
-      note: maryReady()
-        ? '팔십 년 만에 처음으로, 물어볼 수 있는 자리에 와 있습니다.'
-        : (footprintStage() > 0
-            ? '젖은 발자국 ' + footprintStage() + '/3 — 조금씩 가까워지고 있습니다.'
-            : '아직 아무것도 모릅니다. 이 마을에 남은 것이 산 사람뿐인지도.') },
+    { id:'martha', name:'마사 휘트필드', ready:marthaReady(), note:marthaNote() },
+    { id:'mary', name:'메리 휘트필드', ready:maryReady(), note:maryNote() },
     { id:'carter', name:'엘든 카터', ready:carterReady(),
-      note: hasItem('gun')
+      note: state.flags.carterGunTaken
         ? '그의 총을 당신이 가지고 있습니다. 그는 이제 아무것도 내놓을 것이 없습니다.'
         : (carterReady()
             ? '자격은 없습니다. 다만 자격 있는 사람이 옆에 선다면.'
-            : (state.flags.carterMet ? '설득이 닿았는지는 그날 밤에야 알 수 있습니다.' : '아직 찾지 못했습니다.')) },
+            : (state.flags.carterPersuaded
+                ? '그날 밤 부르면 듣겠다고 했습니다. 다만 그에게는 자격이 없습니다. 옆에 설 사람이 필요합니다.'
+                : (state.flags.carterMet ? '예배당 뒷마당에 아직 있습니다. 함께 나가자고 말해 본 적은 없습니다.' : '아직 찾지 못했습니다.'))) },
     { id:'self', name:'당신', ready:true,
       note: hasClue('blood')
         ? (selfBacked() ? '자격은 없습니다. 시간은 살 수 있습니다. 뒤에서 구절을 이어줄 사람이 있다면.'
-                        : '자격도, 뒤를 이어줄 사람도 없습니다. 그저 스물네 번째 이름이 될 뿐입니다.')
+                        : '자격도, 뒤를 이어줄 사람도 없습니다. 그저 장부의 다음 줄이 될 뿐입니다.')
         : '언제든 걸어 들어갈 수는 있습니다. 그것이 무슨 뜻인지는 아직 모릅니다.' }
   ];
+}
+
+/* 젖은 발자국이 다음에 어떻게 오는지 — 조건을 숫자가 아니라 이야기로 알려 준다 */
+function maryNote(){
+  var st = footprintStage();
+  if(maryReady()) return '팔십 년 만에 처음으로, 물어볼 수 있는 자리에 와 있습니다.';
+  if(st === 0){
+    if(!hasClue('flyer')) return '아직 아무것도 모릅니다. 이 마을에 남은 것이 산 사람뿐인지도.';
+    return '전단의 첫 번째 이름이 마음에 걸립니다. 지붕 아래에 머물 때 무언가 따라 들어올지도 모릅니다.';
+  }
+  var head = '젖은 발자국 ' + st + '/3 — ';
+  if(st === 1) return head + (hasClue('ledger')
+    ? '밤이 되면 더 가까이 올 것 같습니다.'
+    : '휘트필드 가의 장부를 본 사람을 찾아오는 것 같습니다. 저택에 장부가 있습니다.');
+  if(st === 2) return head + (hasItem('flower')
+    ? '마른 꽃을 쥐고 우물가나 저택, 숲에 가면 마주칠 것 같습니다.'
+    : '발자국은 저택 뒤 마른 우물 쪽에서 옵니다. 그 아이가 알아볼 만한 것이 거기 있습니다.');
+  return head + '마주 섰습니다. 다만 무엇이 값인지 당신이 아직 모릅니다.';
+}
+
+/* 마사가 지금 어디쯤 와 있는지 — 할 일이 남았으면 어디로 가야 하는지까지 */
+function marthaNote(){
+  var f = state.flags;
+  if(marthaReady()) return '진실을 알았고, 자기 차례라는 것도 받아들였습니다.';
+  if(f.marthaFled) return '떠났습니다. 백 년 만에 처음으로 관리자가 도망친 것입니다.';
+  if(!state.seen['i_confront']){
+    if(f.suspectMartha) return '편지를 쓴 사람이 누구인지 압니다. 여관에서 마주 앉을 수 있습니다.';
+    if(f.metMartha) return hasClue('blood') ? '관리자의 핏줄입니다. 다만 당신을 이 마을로 부른 까닭을 아직 모릅니다.'
+                                            : '관리자의 핏줄입니다. 다만 무엇이 값인지 당신이 아직 모릅니다.';
+    return '여관 주인. 아직 제대로 이야기해 본 적이 없습니다.';
+  }
+  if(!f.marthaMercyMary) return '메리가 누구였는지 아직 묻지 않았습니다. 여관에서 물어볼 수 있습니다.';
+  if(!hasClue('blood')) return '그녀의 사정은 들었습니다. 다만 무엇이 값인지 당신이 아직 모릅니다. 제단 아래에 답이 있습니다.';
+  if(!f.marthaToldTruth) return '진실을 전할 수 있습니다. 여관으로 가십시오.';
+  if(!f.marthaMercyLine){
+    return state.seen['i_last']
+      ? '진실은 전했습니다. 다만 그녀에게 선택을 남겨 주지는 않았습니다.'
+      : '진실은 전했습니다. 그믐이 가까워지면 그녀가 명단의 마지막 줄을 꺼낼 것입니다.';
+  }
+  return '';
 }
 
 function ritualReady(){ return hasClue('phrase') && hasClue('timing') && hasClue('blood'); }
@@ -257,15 +282,19 @@ function pickFresh(key, arr){
   state.lastTravel[key] = s;
   return s;
 }
+/* 마을 밖 — 골목, 창문, 문 같은 말이 어울리지 않는 곳 */
+var WILD_LOCS = ['forest', 'altar', 'well', 'cave', 'lighthouse'];
+
 function composeTravel(from, to){
   var when = isNight() ? 'night' : 'day';
   var base = (from === to)
     ? pickFresh('stay-' + when, TRAVEL.stay[when])
     : pickFresh(to + '-' + when, (TRAVEL.arrive[to] || {})[when]);
   var extra = '';
+  var town = WILD_LOCS.indexOf(to) === -1;
   if(state.sanity <= state.sanityMax * 0.5 && Math.random() < 0.6) extra = pickFresh('san', TRAVEL.sanLow);
-  else if(state.watch >= 3 && Math.random() < 0.6)                 extra = pickFresh('watch', TRAVEL.watched);
-  else if(state.day >= 9 && Math.random() < 0.5)                    extra = pickFresh('late', TRAVEL.late);
+  else if(town && state.watch >= 3 && Math.random() < 0.6)         extra = pickFresh('watch', TRAVEL.watched);
+  else if(town && state.day >= 9 && Math.random() < 0.5)           extra = pickFresh('late', TRAVEL.late);
   else if(Math.random() < 0.3)                                      extra = pickFresh('char', TRAVEL.char[state.charId]);
   return base + (extra ? ' ' + extra : '');
 }
@@ -317,7 +346,7 @@ function renderJournal(){
   bl.innerHTML = '';
   bearers().forEach(function(b){
     var box = document.createElement('div');
-    box.className = 'bearer' + (b.ready ? ' ready' : '') + (b.id === 'carter' && hasItem('gun') ? ' barred' : '');
+    box.className = 'bearer' + (b.ready ? ' ready' : '') + (b.id === 'carter' && state.flags.carterGunTaken ? ' barred' : '');
     var head = document.createElement('div');
     head.className = 'bearer-name';
     var nm = document.createElement('span'); nm.textContent = b.name;
@@ -327,7 +356,7 @@ function renderJournal(){
     head.appendChild(nm); head.appendChild(st);
     var note = document.createElement('div');
     note.className = 'bearer-note';
-    note.textContent = b.note;
+    note.textContent = voice(b.note);
     box.appendChild(head); box.appendChild(note);
     bl.appendChild(box);
   });
@@ -380,13 +409,18 @@ function useWhiskey(){
   if(!hasItem('whiskey')) return;
   removeItem('whiskey');
   applyEffect({ sanity:3, health:-1 });
-  updateStatsUI(); updateInventoryUI();
+  afterItemUse();
 }
 function useBandage(){
   if(!hasItem('bandage')) return;
   removeItem('bandage');
   applyEffect({ health:4 });
+  afterItemUse();
+}
+function afterItemUse(){
   updateStatsUI(); updateInventoryUI();
+  if(document.getElementById('map-section').hidden) return;   /* 장면 도중에는 지도로 돌아올 때 갱신된다 */
+  renderNextStep(); renderJournal(); saveProgress();
 }
 
 function updateInventoryUI(){
@@ -425,6 +459,7 @@ function canReach(id){
 }
 
 function renderMap(){
+  placeLead();
   saveProgress();
   document.body.classList.remove('in-scene', 'peek');
   window.scrollTo(0, 0);
@@ -516,16 +551,17 @@ function nearestOf(locs){
 function renderNextStep(){
   var el = document.getElementById('next-step');
   if(!el) return;
-  var sanLow = state.sanity <= state.sanityMax * 0.5;
-  var hpLow  = state.health <= state.healthMax * 0.5;
+  var sanLow = state.sanity < state.sanityMax * 0.5;
+  var hpLow  = state.health < state.healthMax * 0.5;
   var pick = null, cls = '', head = '', text = '';
 
   if(sanLow || hpLow){
-    pick = nearestOf(['inn', 'harbor']);
+    /* 쉬는 장면이 바로 나오는 곳을 먼저. 둘 다 다른 일이 기다리면 가까운 쪽을 알리되 그렇다고 말한다 */
+    pick = nearestOf(['inn', 'harbor'].filter(canRestAt)) || nearestOf(['inn', 'harbor']);
     if(pick){
       cls = 'warn';
       head = (sanLow ? '정신력' : '체력') + '이 절반 아래입니다';
-      text = LOC[pick.loc].name + '에서 쉬세요';
+      text = LOC[pick.loc].name + '에서 쉬세요' + (canRestAt(pick.loc) ? '' : ' — 다만 쉬기 전에 먼저 마주칠 일이 있습니다');
     }
   }
   if(!pick && state.watch >= 3 && !isNight()){
@@ -743,11 +779,11 @@ function openEncounter(title, text, place, art){
   setArt('event-art', 'event-art-img', sceneArt(art));
   document.getElementById('map-section').hidden = true;
   document.getElementById('encounter-section').hidden = false;
-  document.getElementById('event-title').textContent = title;
+  document.getElementById('event-title').textContent = voice(title);
   var pl = document.getElementById('event-place');
   if(place){ pl.hidden = false; pl.textContent = place; }
   else pl.hidden = true;
-  document.getElementById('event-text').textContent = text;
+  document.getElementById('event-text').textContent = voice(text);
   document.getElementById('doc-area').hidden = true;
   document.getElementById('track-area').hidden = true;
 }
@@ -756,7 +792,22 @@ function showDoc(head, body){
   var area = document.getElementById('doc-area');
   area.hidden = false;
   document.getElementById('doc-head').textContent = head;
-  document.getElementById('doc-body').textContent = body;
+  document.getElementById('doc-body').textContent = voice(body);
+}
+
+/* 받침이 있으면 앞의 조사, 없으면 뒤의 조사 */
+function josa(word, withFinal, without){
+  var c = word.charCodeAt(word.length - 1) - 0xAC00;
+  return word + ((c >= 0 && c <= 11171 && c % 28) ? withFinal : without);
+}
+
+/* 선원은 카터를 만난 적이 없다. 서술이 그를 '엘든'이라 부르면 '카터 교수'로 고쳐 읽힌다 */
+var VOICE_JOSA = { '이':'가', '은':'는', '을':'를', '과':'와', '이라는':'라는' };
+function voice(s){
+  if(!s || typeof s !== 'string' || !state || state.charId !== 'sailor') return s;
+  return s.replace(/엘든(?! 카터)(에게|이라는|이|은|을|과|의|도|만)?/g, function(m, p){
+    return '카터 교수' + (p === undefined ? '' : (VOICE_JOSA[p] !== undefined ? VOICE_JOSA[p] : p));
+  });
 }
 
 function showTrack(total, current){
@@ -774,11 +825,11 @@ function showTrack(total, current){
 function makeChoiceButton(c){
   var btn = document.createElement('button');
   btn.className = 'choice-btn' + (c.weighty ? ' weighty' : '');
-  btn.textContent = c.label;
+  btn.textContent = voice(c.label);
   if(c.note){
     var n = document.createElement('span');
     n.className = 'choice-note';
-    n.textContent = c.note;
+    n.textContent = voice(c.note);
     btn.appendChild(n);
   }
   btn.addEventListener('click', function(){
@@ -962,14 +1013,26 @@ var CAUGHT_LINES = [
   '발이 걸려 넘어집니다. 일어서는 사이에 거리가 사라집니다.',
   '막다른 벽입니다. 되돌아 나오는 길밖에 없고, 그 길에는 그들이 있습니다.'
 ];
-var ESCAPE_LINES = [
-  '숨을 죽인 채 지나갑니다. 등불이 옆을 스치고, 멀어집니다.',
-  '담을 넘어 골목으로 빠집니다. 발소리가 엉뚱한 방향으로 흩어집니다.',
-  '한참을 웅크리고 있다가, 아무 소리도 나지 않게 되었을 때 일어섭니다.'
-];
+var ESCAPE_LINES = {
+  hide:[ '숨을 죽인 채 기다립니다. 무언가 바로 옆을 스치고, 멀어집니다.',
+         '한참을 웅크리고 있다가, 아무 소리도 나지 않게 되었을 때 일어섭니다.' ],
+  run: [ '숨이 턱에 닿을 때까지 달립니다. 돌아보았을 때, 뒤에는 아무것도 없습니다.',
+         '발소리가 엉뚱한 방향으로 흩어집니다. 당신의 것만 남았습니다.' ],
+  rough:[ '아무도 따라올 생각을 못 하는 길로 넘어갑니다. 등 뒤의 소리가 끊깁니다.' ]
+};
+/* 마을 안에서만 어울리는 말 */
+var ESCAPE_TOWN = {
+  run:[ '담을 넘어 골목으로 빠집니다. 발소리가 엉뚱한 방향으로 흩어집니다.' ]
+};
+function escapeLine(kind){
+  var pool = ESCAPE_LINES[kind].slice();
+  if(ESCAPE_TOWN[kind] && WILD_LOCS.indexOf(state.location) === -1) pool = pool.concat(ESCAPE_TOWN[kind]);
+  return pickOne(pool);
+}
 
 function startChase(nextFn, opts){
   opts = opts || {};
+  state.lastChaseDay = state.day;
   var foe = opts.foe || PURSUERS.cult;
   var c = {
     foe:foe, stage:1, stages:opts.stages || 2,
@@ -991,12 +1054,12 @@ function chaseStage(c, lead){
   var choices = [];
 
   choices.push({ label:'몸을 숨긴다', note:'관찰 판정 · 목표 6', onPick:function(){
-      chaseRoll(c, { target:6, mods:obsMods(), flavor:'그늘을 찾아 몸을 접어 넣습니다.', rollLabel:'숨을 죽인다' });
+      chaseRoll(c, { kind:'hide', target:6, mods:obsMods(), flavor:'그늘을 찾아 몸을 접어 넣습니다.', rollLabel:'숨을 죽인다' });
       return null;
   } });
 
   choices.push({ label:'달린다', note:'담력 판정 · 목표 7', onPick:function(){
-      chaseRoll(c, { target:7, mods:nerveMods(), flavor:'뒤돌아보지 않고 내달립니다.', rollLabel:'달린다' });
+      chaseRoll(c, { kind:'run', target:7, mods:nerveMods(), flavor:'뒤돌아보지 않고 내달립니다.', rollLabel:'달린다' });
       return null;
   } });
 
@@ -1011,11 +1074,11 @@ function chaseStage(c, lead){
         }
         if(state.charId === 'doctor'){
           applyEffect({ health:3 });
-          chaseStage(c, '벽에 등을 붙이고 숨을 고릅니다. 손이 기억하는 대로 상처를 싸맵니다. (체력 +3)');
+          chaseStage(c, '잠깐 몸을 낮추고 숨을 고릅니다. 손이 기억하는 대로 상처를 싸맵니다. (체력 +3)');
           return null;
         }
         c.sailorBoost = true;
-        chaseRoll(c, { target:7, mods:nerveMods(), extra:[{ label:'험한 길', value:3 }],
+        chaseRoll(c, { kind:'rough', target:7, mods:nerveMods(), extra:[{ label:'험한 길', value:3 }],
                        flavor:'배에서 익힌 걸음으로, 아무도 안 쓰는 길을 골라 넘어갑니다.', rollLabel:'넘어간다' });
         return null;
     } });
@@ -1048,7 +1111,7 @@ function chaseRoll(c, cfg){
     onResolve:function(success){
       if(success){
         c.stage += 1;
-        if(c.stage > c.stages) return finishChase(c, pickOne(ESCAPE_LINES));
+        if(c.stage > c.stages) return finishChase(c, escapeLine(cfg.kind || 'hide'));
         return chaseStage(c, '한 구간을 벌었습니다. 아직 끝난 것은 아닙니다.');
       }
       caught(c);
@@ -1066,14 +1129,17 @@ function caught(c){
   c.caught += 1;
 
   var msg = pickOne(CAUGHT_LINES) + BR + '체력 −' + dmg +
-    (hasItem('cross') ? ' (십자가가 한 점 덜어냈다)' : '') +
+    (hasItem('cross') ? ' (십자가가 한 점 덜어 주었습니다)' : '') +
     (sanLoss ? ' · 정신력 −' + sanLoss : '');
 
   if(state.health <= 0) return showContinueWithText(msg, function(){ endGame('death'); });
   if(state.sanity <= 0) return showContinueWithText(msg, function(){ handleZeroSanity(c.nextFn); });
 
   if(c.caught >= 2){
-    return showContinueWithText(msg + BR + '더는 버틸 수 없습니다. 그들이 당신을 마을 밖 길가에 내려놓고 돌아갑니다. 경고였습니다.',
+    var dropped = c.foe.dread
+      ? '더는 버틸 수 없습니다. 그러다 그것이 흥미를 잃습니다. 정신을 차려 보니 부두의 밧줄 더미 옆입니다.'
+      : '더는 버틸 수 없습니다. 그들이 당신을 부두의 밧줄 더미 옆에 내려놓고 돌아갑니다. 경고였습니다.';
+    return showContinueWithText(msg + BR + dropped,
       function(){ state.location = 'harbor'; c.nextFn(); });
   }
   showContinueWithText(msg, function(){ chaseStage(c, '간신히 몸을 빼냈습니다. 아직 따라옵니다.'); });

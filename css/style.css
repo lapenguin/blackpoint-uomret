@@ -242,6 +242,7 @@ button.item-chip.usable:hover{ background:var(--brass-dim); }
 .end-log{ border:1px solid var(--line); padding:12px 14px; margin-bottom:22px; background:var(--panel); font-size:.9rem; color:var(--bone-dim); }
 .end-log p{ margin:0 0 6px; }
 .end-log p:last-child{ margin-bottom:0; }
+#end-text{ white-space:pre-line; }
 .end-coda{ border-left:3px solid var(--oxblood-dim); padding-left:14px; margin:0 0 20px; color:var(--bone-dim); font-style:italic; white-space:pre-line; }
 
 .char-card{ text-align:left; padding:14px 16px; background:var(--void); border:1px solid var(--line); color:var(--bone); font-family:var(--font-body); cursor:pointer; width:100%; }

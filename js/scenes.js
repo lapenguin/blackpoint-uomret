@@ -159,15 +159,45 @@ function storyResolve(o){
   var active = storyActive(fx);
   var prepared = storyPrepare(picked.text);
   var vars = {};
+  var before = statSnapshot();
   storyCommit(active, vars);
   logs.forEach(logLine);
+  var text = storyFill(prepared, vars);   /* {꿈} 도 수치를 바꿀 수 있어 채운 뒤에 비교한다 */
   return {
     hasText:!!picked.text,
-    text:storyFill(prepared, vars),
+    text:withStatDelta(text, before),
     next:storyNext(picked.next || o.next),
     doc:picked.doc || o.doc || null
   };
 }
+
+function statSnapshot(){
+  return { sanity:state.sanity, health:state.health, watch:state.watch, ammo:state.ammo, sanityMax:state.sanityMax };
+}
+var STAT_NAMES = [['sanity','정신력'], ['health','체력'], ['sanityMax','정신력 최대치'], ['watch','주시'], ['ammo','탄약']];
+function withStatDelta(text, before){
+  if(!text) return text;
+  if(/\((정신력|체력)/.test(text)) return text;   /* 대본이 이미 적어 둔 경우 */
+  var parts = [];
+  STAT_NAMES.forEach(function(p){
+    var d = state[p[0]] - before[p[0]];
+    if(d) parts.push(p[1] + ' ' + (d > 0 ? '+' : '−') + Math.abs(d));
+  });
+  return parts.length ? text + BR + '(' + parts.join(' · ') + ')' : text;
+}
+
+/* 이곳에 가면 지금 무엇이 나오는가 — 지도 안내가 실제와 어긋나지 않게 */
+function pendingScene(loc){
+  var list = SCENES[loc] || [];
+  for(var i=0;i<list.length;i++){
+    var sc = list[i];
+    if(!sc.repeat && state.seen[sc.id]) continue;
+    if(sc.when && !sc.when()) continue;
+    return sc;
+  }
+  return null;
+}
+function canRestAt(loc){ var sc = pendingScene(loc); return !!(sc && sc.quiet); }
 
 function storyOutcome(o){
   var r = storyResolve(o);
@@ -239,7 +269,7 @@ function visitLocation(id){
         renderMap);
     }
     return showNarrativeBeat('그쪽으로는 갈 수 없다',
-      LOC[id].name + '은(는) 여기서 바로 갈 수 없습니다. 길로 이어진 곳을 거쳐 가야 합니다.',
+      josa(LOC[id].name, '은', '는') + ' 여기서 바로 갈 수 없습니다. 길로 이어진 곳을 거쳐 가야 합니다.',
       renderMap);
   }
 
