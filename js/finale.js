@@ -22,6 +22,7 @@ function finaleIntro(){
 function finale(){
   document.body.classList.add('is-final');
   state.flags.finaleReached = true;
+  state.location = 'altar';   /* 어디 있었든 그믐밤은 제단에서 — 장면 그림도 제단으로 */
 
   var intro = finaleIntro();
   if(ritualReady()){
@@ -73,7 +74,7 @@ function finaleChoices(){
   if(state.flags.boatOffer){
     choices.push({ label:'부두로 내려가 자베즈의 배를 탄다', note:'마을을 등진다', onPick:function(){
         showDiceEncounter({
-          title:'마지막 배', place:'블랙포인트 선착장',
+          title:'마지막 배', place:'블랙포인트 선착장', art:'loc-harbor',
           text:'부두로 내려갑니다. 노인이 벌써 밧줄을 반쯤 풀어 놓고 기다리고 있습니다. "말했잖소. 기다려주지 않는다고."',
           target:6, mods:nerveMods().concat(state.flags.knowTribute ? [{ label:'배가 뜨는 때를 안다', value:1 }] : []),
           onSuccess:function(){ return { text:'뛰어올라 배에 오릅니다.', next:function(){ endGame('boat'); } }; },
@@ -95,7 +96,7 @@ function finaleChoices(){
 
   choices.push({ label:'물러나 도망친다', onPick:function(){
       showChoiceEncounter({
-        title:'돌아보지 말 것', place:'숲길',
+        title:'돌아보지 말 것', place:'숲길', art:'loc-forest',
         text:'등 뒤에서 무언가 당신의 이름을 부릅니다. 낯익은 목소리 같기도 합니다.',
         choices:[
           { label:'돌아보지 않는다', onPick:function(){
