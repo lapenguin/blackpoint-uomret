@@ -22,22 +22,31 @@
 <div id="app">
 
   <section id="screen-title" class="screen">
-    <p class="kicker">심연의 일지</p>
-    <header class="masthead">
-      <h1>블랙포인트 사건</h1>
-      <p class="subtitle">1927년 가을, 매사추세츠 북부 해안</p>
-    </header>
+    <!-- 바다 — js/motion.js 가 그린다. 누르면 연출을 건너뛴다 -->
+    <div id="title-hero" class="title-hero">
+      <canvas id="title-sea" class="title-sea" aria-hidden="true"></canvas>
+      <header class="title-words">
+        <p class="kicker m-step" data-at="0.3">심연의 일지</p>
+        <p class="title-when m-step" data-at="0.8">1927년 가을</p>
+        <h1 class="title-name m-step m-flicker" data-at="2">블랙포인트 사건</h1>
+        <p class="title-where m-step" data-at="3.4">매사추세츠 북부 해안</p>
+        <p class="title-omen-wrap">
+          <span class="sr-only">그들이 다시 눈을 뜨려 한다.</span>
+          <span id="title-omen" class="title-omen" data-text="그들이 다시 눈을 뜨려 한다." aria-hidden="true">그들이 다시 눈을 뜨려 한다.</span>
+        </p>
+      </header>
+    </div>
+    <div id="continue-box" class="continue-box" hidden>
+      <button id="btn-continue" class="btn-primary">이어하기</button>
+      <p id="continue-info" class="continue-info"></p>
+    </div>
+    <button id="btn-start" class="btn-primary">조사 시작</button>
     <p class="lede">엘든 카터 교수의 마지막 편지가 도착한 건 3주 전입니다. "그들이 다시 눈을 뜨려 한다." 그 문장을 끝으로 그는 편지도, 전화도 받지 않았습니다. 당신은 그를 찾아 지도에 거의 나오지 않는 항구 마을, 블랙포인트에 도착합니다.</p>
     <p class="lede">이 마을은 백 년 동안 바다 밑의 것에게 값을 치러 왔습니다. 처음에는 몇 해에 한 사람이었습니다. 올가을에는 그믐마다 한 사람입니다. 열이틀 뒤가 다시 그믐입니다.</p>
     <p class="lede">알아내야 할 것은 <b>봉인하는 법</b>이 아닙니다. 그 방법은 이미 백 년 전에 적혀 있습니다. 알아내야 할 것은 <b>누가 그 값을 치를 수 있는가</b>, 그리고 <b>그 사람을 어떻게 움직이는가</b>입니다.</p>
     <p id="best-record" class="best-record" hidden></p>
     <p id="offline-status" class="offline-status" hidden></p>
     <p id="install-hint" class="install-hint" hidden></p>
-    <div id="continue-box" class="continue-box" hidden>
-      <button id="btn-continue" class="btn-primary">이어하기</button>
-      <p id="continue-info" class="continue-info"></p>
-    </div>
-    <button id="btn-start" class="btn-primary">조사 시작</button>
   </section>
 
   <section id="screen-select" class="screen" hidden>
@@ -182,12 +191,13 @@
 
 </div>
 
-<!-- 순서가 중요하다: 데이터 → 엔진 → 턴 → 장면 → 결말(여기서 게임이 시작된다) -->
+<!-- 순서가 중요하다: 데이터 → 엔진 → 턴 → 장면 → 움직이는 그림 → 결말(여기서 게임이 시작된다) -->
 <script src="js/data.js"></script>
 <script src="js/story.js"></script>
 <script src="js/engine.js"></script>
 <script src="js/turn.js"></script>
 <script src="js/scenes.js"></script>
+<script src="js/motion.js"></script>
 <script src="js/finale.js"></script>
 <script src="js/pwa.js"></script>
 </body>
