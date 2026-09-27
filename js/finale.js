@@ -449,6 +449,10 @@ document.getElementById('scene-strip').addEventListener('click', function(){
 });
 
 document.getElementById('btn-start').addEventListener('click', renderCharSelect);
+
+/* 타이틀의 바다 */
+Motion.init(document.getElementById('title-sea'), { root:document.getElementById('title-hero') });
+Motion.start();
 document.getElementById('btn-continue').addEventListener('click', resumeGame);
 
 /* 이어하기 */

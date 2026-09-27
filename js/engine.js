@@ -244,6 +244,8 @@ function showScreen(name){
     document.getElementById('screen-'+n).hidden = (n !== name);
   });
   document.body.classList.remove('in-scene', 'peek');
+  /* 바다는 타이틀에서만 움직인다 */
+  if(typeof Motion !== 'undefined') Motion[name === 'title' ? 'start' : 'stop']();
 }
 
 /* 장면 모드의 한 줄 상태 — 누르면 전체 상태창이 펼쳐진다 */
