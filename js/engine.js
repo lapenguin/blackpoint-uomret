@@ -173,6 +173,25 @@ function carterReady(){
 }
 function selfBacked(){ return !!state.flags.marthaToldTruth && !state.flags.marthaFled; }
 
+/* 일지에 보여 줄 진행 단계 — 무엇이 남았는지가 아니라 어디까지 왔는지만 */
+function bearerSteps(id){
+  var f = state.flags, list;
+  if(id === 'martha') list = [f.suspectMartha, state.seen['i_confront'], f.marthaMercyMary, hasClue('blood'), f.marthaToldTruth, f.marthaMercyLine];
+  else if(id === 'mary') list = [f.mary1, f.mary2, f.mary3, hasClue('blood')];
+  else if(id === 'carter') list = [f.carterFindable, f.carterMet, f.carterPersuaded, maryReady()];
+  else return null;
+  return [list.filter(Boolean).length, list.length];
+}
+
+/* 아직 모르는 사람은 일지에 나오지 않는다 */
+function bearerKnown(id){
+  var f = state.flags;
+  if(id === 'martha') return !!f.suspectMartha || !!state.seen['i_confront'];
+  if(id === 'mary') return !!f.mary1 || !!f.knowMary || hasClue('marydrown');
+  if(id === 'carter') return !!f.carterFindable || !!f.carterMet;
+  return true;
+}
+
 function bearers(){
   return [
     { id:'martha', name:'마사 휘트필드', ready:marthaReady(), note:marthaNote() },
@@ -201,7 +220,7 @@ function maryNote(){
     if(!hasClue('flyer')) return '아직 아무것도 모릅니다. 이 마을에 남은 것이 산 사람뿐인지도.';
     return '전단의 첫 번째 이름이 마음에 걸립니다. 지붕 아래에 머물 때 무언가 따라 들어올지도 모릅니다.';
   }
-  var head = '젖은 발자국 ' + st + '/3 — ';
+  var head = '';
   if(st === 1) return head + (hasClue('ledger')
     ? '밤이 되면 더 가까이 올 것 같습니다.'
     : '휘트필드 가의 장부를 본 사람을 찾아오는 것 같습니다. 저택에 장부가 있습니다.');
@@ -341,20 +360,27 @@ function renderJournal(){
   /* 값을 치를 사람 */
   var hint = document.getElementById('bearer-hint');
   hint.textContent = hasClue('blood')
-    ? '참된 봉인은 계약을 맺은 피를 받습니다. 남은 것은 그 사람을 움직이는 일뿐입니다.'
-    : '아직 무엇이 값인지조차 모릅니다. 제단 아래를 열어야 합니다.';
+    ? '참된 봉인은 계약을 맺은 피를 받습니다. 남은 것은 그 사람을 움직이는 일입니다.'
+    : '세 가지를 알아내도, 대신 걸어 들어갈 사람이 없으면 봉인은 반쪽입니다.';
 
   var bl = document.getElementById('bearer-list');
   bl.innerHTML = '';
+  var unknown = 0;
   bearers().forEach(function(b){
+    if(!bearerKnown(b.id)){ unknown++; return; }
     var box = document.createElement('div');
-    box.className = 'bearer' + (b.ready ? ' ready' : '') + (b.id === 'carter' && state.flags.carterGunTaken ? ' barred' : '');
+    /* '당신'은 언제든 갈 수 있지만, 그것은 목표가 아니라 마지막 수단이다 */
+    var lit = b.ready && b.id !== 'self';
+    box.className = 'bearer' + (lit ? ' ready' : '') + (b.id === 'carter' && state.flags.carterGunTaken ? ' barred' : '');
     var head = document.createElement('div');
     head.className = 'bearer-name';
     var nm = document.createElement('span'); nm.textContent = b.name;
     var st = document.createElement('span');
     st.className = 'bearer-state';
-    st.textContent = b.ready ? '준비됨' : '아직';
+    var steps = bearerSteps(b.id);
+    st.textContent = b.id === 'self' ? '마지막 수단'
+      : (b.ready ? '준비됨' : '●'.repeat(steps[0]) + '○'.repeat(steps[1] - steps[0]));
+    if(steps && !b.ready) st.setAttribute('aria-label', steps[1] + '단계 중 ' + steps[0] + '단계');
     head.appendChild(nm); head.appendChild(st);
     var note = document.createElement('div');
     note.className = 'bearer-note';
@@ -362,13 +388,19 @@ function renderJournal(){
     box.appendChild(head); box.appendChild(note);
     bl.appendChild(box);
   });
+  if(unknown){
+    var more = document.createElement('p');
+    more.className = 'bearer-more';
+    more.textContent = '이 마을에는 당신이 아직 모르는 이름이 있습니다.';
+    bl.appendChild(more);
+  }
 
   /* 의식 요건 */
   var req = document.getElementById('req-list');
   req.innerHTML = '';
-  [['구절','phrase','그들이 읊는 말이 어딘가 적혀 있을 것이다 — 동굴, 혹은 예배당'],
-   ['시기','timing','사람이 사라지는 날에는 규칙이 있다 — 광장·학교, 혹은 등대'],
-   ['자격','blood','백 년 전 첫 관리자가 무언가를 남겼다 — 제단 아래']].forEach(function(r){
+  [['① 구절','phrase','그들이 읊는 말이 어딘가 적혀 있을 것이다 — 동굴, 혹은 예배당'],
+   ['② 시기','timing','사람이 사라지는 날에는 규칙이 있다 — 광장·학교, 혹은 등대'],
+   ['③ 자격','blood','백 년 전 첫 관리자가 무언가를 남겼다 — 제단 아래']].forEach(function(r){
     var li = document.createElement('li');
     var got = hasClue(r[1]);
     li.className = got ? 'met' : '';

@@ -118,6 +118,9 @@ body.is-final{ background: radial-gradient(ellipse 130% 50% at 50% -8%, #2a1418 
 .bearer-state{ font-size:.74rem; margin-left:auto; color:var(--bone-faint); white-space:nowrap; }
 .bearer.ready .bearer-state{ color:var(--teal); }
 .bearer-note{ font-size:.82rem; color:var(--bone-dim); margin-top:3px; }
+.bearer-state{ letter-spacing:.12em; }
+.bearer-more{ font-size:.82rem; color:var(--bone-faint); font-style:italic; margin:2px 0 0; }
+.req-sub{ font-size:.9rem; color:var(--bone-dim); margin:10px 0 6px; }
 
 .clue-entry{ border-left:2px solid var(--line); padding:2px 0 2px 10px; margin-bottom:10px; }
 .clue-entry.derived{ border-left-color:var(--brass); }
