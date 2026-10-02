@@ -214,7 +214,7 @@ function runBearer(who){
 
 function sealRoll(who, cfg, correct){
   var extra = Math.min(2, Math.floor(Math.max(0, clueCount() - 8) / 3));
-  var mods = obsMods().concat(cfg.bonus);
+  var mods = obsMods().concat(cfg.bonus, bodyMods());
   mods.push({ label: correct ? '구절이 맞다' : '구절이 틀렸다', value: correct ? 1 : -3 });
   if(extra) mods.push({ label:'모아둔 단서', value:extra });
   if(hasClue('carterfate')) mods.push({ label:'순서를 안다', value:1 });
@@ -262,7 +262,7 @@ function blindRitual(){
     choices:options.map(function(opt){
       return { label:opt, onPick:function(){
         var correct = (opt === '느가 프타른 이아 크나아');
-        var mods = obsMods().concat([{ label: correct ? '구절이 맞다' : '구절이 틀렸다', value: correct ? 1 : -3 },
+        var mods = obsMods().concat(bodyMods(), [{ label: correct ? '구절이 맞다' : '구절이 틀렸다', value: correct ? 1 : -3 },
                                      { label:'값을 모른다', value:-2 }]);
         showRollStep({
           title:'값 없는 의식', place:'제단 · 마지막 밤',
@@ -418,7 +418,7 @@ function afterIntro(){
   if(seen) return renderMap();
   try{ localStorage.setItem('bp_guide_v1', '1'); }catch(e){}
   showNarrativeBeat('처음이라면',
-    '목표 — 그믐밤까지 구절·시기·자격 세 가지를 알아내고, 누가 값을 치를지 정합니다.' + BR +
+    '목표 — 그믐밤까지 구절·시기·자격 세 가지를 알아내고, 당신 대신 걸어 들어갈 사람을 준비합니다. 일지의 \'봉인에 필요한 것\'에서 어디까지 왔는지 볼 수 있습니다.' + BR +
     '다음 할 일 — 지도 위 한 줄이 지금 가 볼 만한 곳을 알려줍니다. 누르면 가는 길이 깜빡입니다. 한 번 움직일 때마다 반나절이 지납니다.' + BR +
     '정신력 — 절반 아래로 떨어지면 여관이나 부두에서 쉬세요. 바닥나면 이야기가 끝납니다.' + BR +
     '주시 — 마을이 당신을 지켜보는 정도입니다. 높으면 밤에 쫓깁니다. 여관과 부두는 밤에도 안전하고, 주시는 하루에 하나씩 가라앉습니다.' + BR +
