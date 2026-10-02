@@ -973,6 +973,17 @@ function shakePanel(){
   panel.classList.add('hit');
 }
 
+var PUSH_COST = 2, PUSH_BONUS = 2;
+
+/* 그믐밤 — 물가까지 버틸 몸이 남았는가 */
+function bodyMods(){
+  var hs = healthStatus();
+  if(hs === 'critical') return [{ label:'몸이 버티지 못한다', value:-2 }];
+  if(hs === 'wounded')  return [{ label:'몸이 무겁다', value:-1 }];
+  if(state.health >= state.healthMax * 0.6) return [{ label:'버틸 몸이 있다', value:1 }];
+  return [];
+}
+
 /* 모든 판정이 지나가는 한 곳 */
 function showRollStep(cfg){
   openEncounter(cfg.title, cfg.text, cfg.place, cfg.art);
@@ -999,6 +1010,26 @@ function showRollStep(cfg){
     if(c.when && !c.when()) return;
     box.appendChild(makeChoiceButton(c));
   });
+
+  /* 몸으로 때운다 — 체력을 내고 한 번의 판정을 산다. 판정마다 한 번, 이것으로 쓰러지지는 않는다 */
+  if(state && state.health > PUSH_COST){
+    var pushBtn = document.createElement('button');
+    pushBtn.className = 'choice-btn push-btn';
+    pushBtn.textContent = '무리한다';
+    var pn = document.createElement('span');
+    pn.className = 'choice-note';
+    pn.textContent = '체력 −' + PUSH_COST + ' · 이번 판정 +' + PUSH_BONUS;
+    pushBtn.appendChild(pn);
+    pushBtn.addEventListener('click', function(){
+      applyEffect({ health:-PUSH_COST });
+      mods = mods.concat([{ label:'무리했다', value:PUSH_BONUS }]);
+      bonus = sumMods(mods);
+      renderMods(mods, cfg.target);
+      updateStatsUI();
+      pushBtn.remove();
+    });
+    box.appendChild(pushBtn);
+  }
 
   var rollBtn = document.createElement('button');
   rollBtn.className = 'choice-btn roll-btn';

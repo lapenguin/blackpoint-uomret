@@ -263,6 +263,7 @@ body.is-final .art img{ filter:grayscale(.45) sepia(.4) contrast(1.15) brightnes
 .choice-btn.weighty:hover{ border-color:var(--oxblood); }
 .roll-btn{ text-align:center; font-family:var(--font-display); letter-spacing:.02em; border-color:var(--brass); }
 .roll-btn:hover{ background:var(--brass-dim); }
+.push-btn{ border-style:dashed; }
 
 .inventory{ display:flex; align-items:flex-start; gap:10px; flex-wrap:wrap; font-size:.85rem; color:var(--bone-dim); margin:4px 0 14px; }
 .inventory-items{ display:flex; gap:6px; flex-wrap:wrap; }

@@ -214,7 +214,7 @@ function runBearer(who){
 
 function sealRoll(who, cfg, correct){
   var extra = Math.min(2, Math.floor(Math.max(0, clueCount() - 8) / 3));
-  var mods = obsMods().concat(cfg.bonus);
+  var mods = obsMods().concat(cfg.bonus, bodyMods());
   mods.push({ label: correct ? '구절이 맞다' : '구절이 틀렸다', value: correct ? 1 : -3 });
   if(extra) mods.push({ label:'모아둔 단서', value:extra });
   if(hasClue('carterfate')) mods.push({ label:'순서를 안다', value:1 });
@@ -262,7 +262,7 @@ function blindRitual(){
     choices:options.map(function(opt){
       return { label:opt, onPick:function(){
         var correct = (opt === '느가 프타른 이아 크나아');
-        var mods = obsMods().concat([{ label: correct ? '구절이 맞다' : '구절이 틀렸다', value: correct ? 1 : -3 },
+        var mods = obsMods().concat(bodyMods(), [{ label: correct ? '구절이 맞다' : '구절이 틀렸다', value: correct ? 1 : -3 },
                                      { label:'값을 모른다', value:-2 }]);
         showRollStep({
           title:'값 없는 의식', place:'제단 · 마지막 밤',

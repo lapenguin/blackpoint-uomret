@@ -92,6 +92,8 @@ function storyCommit(active, vars){
     else if(x.k === 'flag') flags.push(x.a);
     else d[x.k] += storyValue(x.v, vars);
   }); });
+  /* 장면에서 다치는 것만으로는 쓰러지지 않는다 — 죽음은 추격이나 그믐밤처럼 위험이 드러난 곳에서만 */
+  if(d.health < 0) d.health = Math.max(d.health, 1 - state.health);
   applyEffect({ sanity:d.sanity, health:d.health, sanityMax:d.sanityMax, watch:d.watch });
   items.forEach(addItem);
   drops.forEach(removeItem);
